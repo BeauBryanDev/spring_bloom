@@ -25,3 +25,6 @@ replay_pid*
 .env
 target/
 notes.txt
+
+# Vision model weights - too large for git, obtained out of band
+*.onnx
