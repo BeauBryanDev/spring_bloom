@@ -15,6 +15,7 @@ public enum FlowerStockStatus {
     private final boolean sellable;
 
     FlowerStockStatus(String label, boolean sellable) {
+        
         this.label = label;
         this.sellable = sellable;
     }
