@@ -4,6 +4,7 @@ import com.springbloom.domain.service.pricing.BouquetPricingStrategy;
 import com.springbloom.domain.service.pricing.GarlandPricingStrategy;
 import com.springbloom.domain.service.pricing.IndividualPricingStrategy;
 import com.springbloom.domain.service.pricing.PricingStrategy;
+import com.springbloom.domain.service.QuotationComposer;
 import com.springbloom.domain.service.pricing.PricingStrategyFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,5 +33,10 @@ public class PricingConfig {
     @Bean
     public PricingStrategyFactory pricingStrategyFactory(List<PricingStrategy> strategies) {
         return new PricingStrategyFactory(strategies);
+    }
+
+    @Bean
+    public QuotationComposer quotationComposer(PricingStrategyFactory strategies) {
+        return new QuotationComposer(strategies);
     }
 }
