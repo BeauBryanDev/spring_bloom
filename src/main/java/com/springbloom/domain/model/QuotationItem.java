@@ -12,9 +12,7 @@ import com.springbloom.domain.model.vo.Money;
  * One quotation line: an INDIVIDUAL flower, or a BOUQUET/GARLAND composed from
  * several species. composedSubtotal is what the species add up to; subtotal is
  * what the customer pays once the pricing strategy has run.
- *
- * The discount rule mirrors ck_quotation_item_discount_only_bundle. The order
- * side is missing that constraint in V1, so it is enforced here for both.
+
  */
 public record QuotationItem(
         ProductType productType,
