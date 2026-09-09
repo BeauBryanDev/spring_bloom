@@ -16,8 +16,11 @@ public record Money(BigDecimal amount) {
     public static final Money ZERO = Money.of(BigDecimal.ZERO);
 
     public Money {
+
         Objects.requireNonNull(amount, "amount");
+
         if (amount.signum() < 0) {
+
             throw new IllegalArgumentException("Money cannot be negative: " + amount);
         }
         amount = amount.setScale(2, RoundingMode.HALF_UP);
@@ -43,6 +46,7 @@ public record Money(BigDecimal amount) {
         if (result.signum() < 0) {
             // This is a programming error, not a user error.
             throw new IllegalArgumentException(
+                
                     "Cannot subtract " + other.amount + " from " + this.amount);
         }
         return Money.of(result);
@@ -50,6 +54,7 @@ public record Money(BigDecimal amount) {
 
     public Money multiply(int quantity) {
         if (quantity < 0) {
+
             throw new IllegalArgumentException("quantity cannot be negative: " + quantity);
         }
         return Money.of(this.amount.multiply(BigDecimal.valueOf(quantity)));
@@ -57,6 +62,7 @@ public record Money(BigDecimal amount) {
 
     /** Multiplies by a factor such as flower_stock.import_price_multiplier. */
     public Money multiply(BigDecimal factor) {
+
         return Money.of(this.amount.multiply(factor));
     }
 
