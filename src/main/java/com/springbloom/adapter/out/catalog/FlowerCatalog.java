@@ -101,7 +101,7 @@ public class FlowerCatalog implements FlowerCatalogPort {
             FlowerStockStatus availability) {
 
         FlowerSpecies toSpecies() {
-            return new FlowerSpecies(null, modelClass, commonName, scientificName, null, null, null);
+            return FlowerSpecies.catalogEntry(modelClass, commonName, scientificName);
         }
     }
 }
