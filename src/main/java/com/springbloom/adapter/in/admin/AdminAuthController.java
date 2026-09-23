@@ -1,9 +1,10 @@
+
 package com.springbloom.adapter.in.admin;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.ui.Model;
 
 /**
  * Renders the admin login form. Spring Security itself handles the POST to

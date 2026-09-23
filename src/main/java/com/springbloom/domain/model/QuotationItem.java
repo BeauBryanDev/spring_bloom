@@ -39,7 +39,7 @@ public record QuotationItem(
                 throw new IllegalArgumentException(
                         "An INDIVIDUAL line holds exactly one species, not " + species.size());
             }
-        } else if (discountPercentage == null) {
+        } else if (discountPercentage == null) {  //  BOUQUET/GARLAND → discount is required (non-null).
             throw new IllegalArgumentException(productType + " lines require a discount percentage");
         }
 

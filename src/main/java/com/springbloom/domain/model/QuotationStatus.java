@@ -1,6 +1,6 @@
 package com.springbloom.domain.model;
 
-/** Mirrors the quotation_status enum in V1__init_schema.sql. */
+/** Matche the quotation_status enum in V1__init_schema.sql. */
 public enum QuotationStatus {
     DRAFT,
     SENT,

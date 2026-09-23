@@ -10,7 +10,7 @@ import com.springbloom.domain.model.vo.Money;
 public record QuotationItemSpecies(
         Long speciesId,
         String commonNameSnapshot,
-        int quantity,
+        int quantity,   
         Money unitPriceSnapshot,
         Money lineTotal) {
 
