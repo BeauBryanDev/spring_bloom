@@ -1,12 +1,13 @@
 package com.springbloom.adapter.in.web;
 
-import com.springbloom.domain.model.FlowerStockStatus;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.Arrays;
-import java.util.List;
+import com.springbloom.domain.model.FlowerStockStatus;
 
 /**
  * The three static company pages: "Sobre Nosotros", "Contacto" and "Como Funciona".

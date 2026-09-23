@@ -57,7 +57,7 @@ class OnnxVisionAdapterTest {
     }
 
     @Test
-    @DisplayName("model metadata and flowers.json name exactly the same species")
+    @DisplayName("every model class exists in flowers.json")
     void metadataMatchesCatalog() {
         String[] modelNames = adapter.classNames();
         assertThat(modelNames).hasSize(EXPECTED_CLASSES);
@@ -67,8 +67,9 @@ class OnnxVisionAdapterTest {
                 .collect(Collectors.toSet());
 
         assertThat(catalogKeys)
-                .as("flowers.json must match the model byte for byte")
-                .containsExactlyInAnyOrder(modelNames);
+                .as("every one of the model's 90 classes must be in flowers.json; the catalog "
+                        + "may hold extra species (nepenthes, dionaea_muscipula) the model cannot see")
+                .contains(modelNames);
     }
 
     /**

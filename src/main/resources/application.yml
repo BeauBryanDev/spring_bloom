@@ -32,11 +32,42 @@ spring:
         options:
           model: claude-haiku-4-5-20251001
 
+    openai:
+      api-key: ${EMBEDDINGS_MODEL_KEY:}
+      # Solo embeddings. El chat es Anthropic; sin esto la autoconfiguracion de
+      # OpenAI registraria tambien un ChatModel y podria colarse por inyeccion.
+      chat:
+        enabled: false
+      embedding:
+        options:
+          model: text-embedding-3-small
+
+    vectorstore:
+      pgvector:
+        # El esquema lo manda Flyway (V3) y ddl-auto esta en validate: dejar que
+        # Spring AI cree su tabla pondria DDL fuera de Flyway.
+        initialize-schema: false
+        table-name: vector_store
+        dimensions: 1536
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+
 server:
   error:
     include-stacktrace: never
     include-message: always
 
 florabelle:
+  knowledge:
+    # Medido contra el corpus ingerido: el acierto mas debil puntua 0.386 y la
+    # pregunta ajena mejor puntuada, 0.243. Por debajo de este umbral no hay
+    # respuesta, y no encontrar nada es una respuesta valida.
+    similarity-threshold: ${KNOWLEDGE_SIMILARITY_THRESHOLD:0.30}
+
   vision:
     model-path: ${VISION_MODEL_PATH:file:./vision_model.onnx}
+
+    # Below this, the trained YOLO model's own top detection is treated as a
+    # suggestion rather than an answer, and the agent may use its own judgement.
+    # At or above it, the model decides and the agent may not overrule it.
+    trust-threshold: ${VISION_TRUST_THRESHOLD:0.5}

@@ -60,7 +60,7 @@ class FlowerStockRepositoryAdapterTest {
     @DisplayName("the Postgres enum reads back into every FlowerStockStatus constant")
     void readsEveryStatusValue() {
         List<FlowerStock> all = stockRepository.findAll();
-        assertThat(all).hasSize(90);
+        assertThat(all).hasSize(92);
 
         Map<FlowerStockStatus, Long> byStatus = all.stream()
                 .collect(Collectors.groupingBy(FlowerStock::getStatus, Collectors.counting()));
@@ -68,7 +68,8 @@ class FlowerStockRepositoryAdapterTest {
         assertThat(byStatus).containsOnlyKeys(FlowerStockStatus.values());
         assertThat(byStatus.get(FlowerStockStatus.IN_STOCK)).isEqualTo(40);
         assertThat(byStatus.get(FlowerStockStatus.INCOMING_RESTOCK)).isEqualTo(30);
-        assertThat(byStatus.get(FlowerStockStatus.IMPORT_ON_REQUEST)).isEqualTo(10);
+        // 10 seeded + nepenthes and dionaea_muscipula, both hand-added as IMPORT_ON_REQUEST.
+        assertThat(byStatus.get(FlowerStockStatus.IMPORT_ON_REQUEST)).isEqualTo(12);
         assertThat(byStatus.get(FlowerStockStatus.NOT_FOR_SALE)).isEqualTo(10);
     }
 

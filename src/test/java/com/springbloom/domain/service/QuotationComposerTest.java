@@ -111,12 +111,21 @@ class QuotationComposerTest {
         }
 
         @Test
-        @DisplayName("bundles require a discount, as the check constraint does")
+        @DisplayName("a garland still requires an explicit discount: only BOUQUET is policy-resolved")
         void rejectsMissingDiscount() {
             assertThatThrownBy(() -> composer.composeItem(
-                    ProductType.BOUQUET, null, List.of(selection(1L, "rose", "4448.00", 3))))
+                    ProductType.GARLAND, null, List.of(selection(1L, "rose", "4448.00", 3))))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("require a discount");
+        }
+
+        @Test
+        @DisplayName("a bouquet with no discount falls back to the shop's volume policy")
+        void fillsMissingBouquetDiscountFromPolicy() {
+            QuotationItem bouquet = composer.composeItem(
+                    ProductType.BOUQUET, null, List.of(selection(1L, "rose", "4448.00", 3)));
+
+            assertThat(bouquet.discountPercentage()).isEqualByComparingTo(BigDecimal.ZERO.setScale(2));
         }
 
         @Test

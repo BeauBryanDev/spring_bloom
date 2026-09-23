@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class RequestQuotationService implements RequestQuotationUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(RequestQuotationService.class);
-    private static final Duration VALIDITY = Duration.ofDays(7);
+    private static final Duration VALIDITY = Duration.ofDays(5);
 
     private final FlowerSpeciesRepository speciesRepository;
     private final FlowerStockRepository stockRepository;

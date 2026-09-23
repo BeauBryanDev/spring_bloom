@@ -10,6 +10,7 @@ import com.springbloom.domain.model.Quotation;
 import com.springbloom.domain.model.QuotationItem;
 import com.springbloom.domain.model.QuotationItemSpecies;
 import com.springbloom.domain.model.vo.Money;
+import com.springbloom.domain.service.pricing.BouquetDiscountPolicy;
 import com.springbloom.domain.service.pricing.PricingStrategyFactory;
 
 /**
@@ -61,10 +62,23 @@ public class QuotationComposer {
                 .map(QuotationItemSpecies::lineTotal)
                 .reduce(Money.ZERO, Money::plus);
 
-        Money subtotal = strategies.forType(productType)
-                .calculatePrice(composedSubtotal, discountPercentage);
+        BigDecimal effectiveDiscount = resolveDiscount(productType, discountPercentage, selections);
 
-        return new QuotationItem(productType, discountPercentage, lines, composedSubtotal, subtotal);
+        Money subtotal = strategies.forType(productType)
+                .calculatePrice(composedSubtotal, effectiveDiscount);
+
+        return new QuotationItem(productType, effectiveDiscount, lines, composedSubtotal, subtotal);
+    }
+
+    /** BOUQUET fills a missing discount from the shop's volume policy; nothing else may invent one. */
+    private BigDecimal resolveDiscount(
+            ProductType productType, BigDecimal discountPercentage, List<Selection> selections) {
+
+        if (discountPercentage != null || productType != ProductType.BOUQUET) {
+            return discountPercentage;
+        }
+        int totalStems = selections.stream().mapToInt(Selection::quantity).sum();
+        return BouquetDiscountPolicy.discountFor(totalStems);
     }
 
     public Quotation compose(List<QuotationItem> items) {

@@ -30,10 +30,6 @@ public interface FileComplaintUseCase {
                 throw new IllegalArgumentException("A complaint type is required");
             }
 
-            if (type == ComplaintType.OTHER) {
-                throw new IllegalArgumentException("Other complaints are not allowed");
-            }
-
             if (description == null || description.isBlank()) {
                 throw new IllegalArgumentException("A complaint needs a description");
             }
