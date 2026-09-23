@@ -159,15 +159,19 @@ public class OnnxVisionAdapter implements VisionClassifierPort, AutoCloseable {
     }
 
     private BufferedImage decode(byte[] imageBytes) {
+
         if (imageBytes == null || imageBytes.length == 0) {
             throw new IllegalArgumentException("Empty image");
         }
         try {
+
             BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
             if (image == null) {
+
                 throw new IllegalArgumentException("Unsupported image format");
             }
             return image;
+
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not read image", e);
         }
@@ -210,6 +214,7 @@ public class OnnxVisionAdapter implements VisionClassifierPort, AutoCloseable {
 
         List<Candidate> candidates = new ArrayList<>();
         for (int anchor = 0; anchor < anchors; anchor++) {
+            
             int bestClass = -1;
             float bestScore = confidenceThreshold;
             for (int c = 0; c < numClasses; c++) {
