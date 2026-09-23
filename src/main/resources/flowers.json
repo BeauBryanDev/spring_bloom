@@ -91,5 +91,7 @@
   { "modelClass": "stemless_gentian", "commonName": "Genciana sin tallo", "scientificName": "Gentiana acaulis", "availability": "NOT_FOR_SALE" },
   { "modelClass": "cautleya_spicata", "commonName": "Cautleya", "scientificName": "Cautleya spicata", "availability": "NOT_FOR_SALE" },
   { "modelClass": "tree_poppy", "commonName": "Amapola arborea", "scientificName": "Romneya coulteri", "availability": "NOT_FOR_SALE" },
-  { "modelClass": "globe_flower", "commonName": "Trolio", "scientificName": "Trollius europaeus", "availability": "NOT_FOR_SALE" }
+  { "modelClass": "globe_flower", "commonName": "Trolio", "scientificName": "Trollius europaeus", "availability": "NOT_FOR_SALE" },
+  { "modelClass": "nepenthes", "commonName": "Nepenthes", "scientificName": "Nepenthes spp.", "availability": "IMPORT_ON_REQUEST" },
+  { "modelClass": "dionaea_muscipula", "commonName": "Dionea atrapamoscas", "scientificName": "Dionaea muscipula", "availability": "IMPORT_ON_REQUEST" }
 ]
