@@ -1,0 +1,2511 @@
+/*
+   Spring-Bloom - brand variables
+   Primary brand color is #BAAC72. It is used as a solid accent on header,
+   footer, nav and primary buttons - never as a full-page background, to
+   keep body text readable.
+*/
+
+:root {
+    --brand-olive: #BAAC72;
+    --brand-olive-dark: #948859;
+
+    /* Garden green - the dark bar colour of the header, footer and chat header. */
+    --brand-green: #2D3705;
+    --brand-green-dark: #1E2503;
+    --bg-cream: #F7F5EC;
+    --surface-white: #FFFFFF;
+    --text-dark: #2B2E1F;
+    --text-muted: #6B6A57;
+    --accent-gold: #E0A83E;
+    --border-soft: #E4E0CE;
+
+    /*
+       Shared by the header and the chat panel: the panel starts below the
+       header, so it has to subtract exactly this much or its input box falls
+       off the bottom of the viewport.
+    */
+    --header-height: 5rem;
+
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-panel: 24px;
+    --shadow-card: 0 2px 10px rgba(43, 46, 31, 0.08);
+    --transition-fast: 200ms ease;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/*
+   Base type is 18px rather than the browser's 16px default. Every size in this
+   sheet is in rem, so raising the root raises the whole page together instead
+   of leaving headings and body text out of step.
+*/
+html {
+    font-size: 18px;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* 
+   Page shell - controls the 75/25 split when the chat panel is open
+*/
+
+.page-shell {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+}
+
+.page-shell.chat-open {
+    grid-template-columns: 3fr 1fr;
+}
+
+/*
+   Every child is placed explicitly. Auto-placement would push the chat panel
+   onto a fourth row - the footer spans both columns, so there is no free cell
+   left beside it - and the panel would land under the page instead of next to
+   it.
+*/
+.main-content {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+}
+
+/* 
+   Header + nav
+*/
+
+.site-header {
+    background-color: var(--brand-green);
+    color: var(--surface-white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    min-height: var(--header-height);
+    grid-column: 1 / -1;
+    grid-row: 1;
+}
+
+.site-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.site-header .logo img {
+    height: 40px;
+    width: 40px;
+}
+
+.site-header .logo-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.site-header .logo-subtitle {
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+.main-nav {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.main-nav a {
+    font-weight: 500;
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: border-color var(--transition-fast);
+}
+
+.main-nav a.active,
+.main-nav a:hover {
+    border-bottom-color: var(--accent-gold);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-talk-florabelle {
+    background-color: var(--accent-gold);
+    color: var(--text-dark);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 10px 18px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: filter var(--transition-fast);
+}
+
+.btn-talk-florabelle:hover {
+    filter: brightness(1.05);
+}
+
+.btn-talk-florabelle img {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: -3px;
+    margin-right: 6px;
+}
+
+.btn-cart {
+    position: relative;
+    background: none;
+    border: none;
+    padding: 4px;
+    line-height: 0;
+}
+
+.btn-cart img {
+    width: 26px;
+    height: 26px;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background-color: var(--accent-gold);
+    color: var(--text-dark);
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/*
+   Buttons, general
+*/
+
+.btn-primary {
+    background-color: var(--brand-olive-dark);
+    color: var(--surface-white);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 12px 22px;
+    font-weight: 600;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-dark);
+    border: 1px solid var(--brand-olive-dark);
+    border-radius: var(--radius-md);
+    padding: 12px 22px;
+    font-weight: 600;
+}
+
+/* 
+   Hero
+*/
+
+.hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+    padding: 56px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 2.4rem;
+    line-height: 1.15;
+    margin: 0 0 16px;
+    color: var(--brand-green-dark);
+}
+
+.hero p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin: 0 0 28px;
+    max-width: 480px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.hero-image img {
+    border-radius: var(--radius-lg);
+    width: 100%;
+}
+
+/*
+   Benefits strip
+ */
+
+.benefits {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+.benefit-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.benefit-item img {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.benefit-item h3 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+}
+
+.benefit-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* 
+   Catalog - this is the section that carries the most commercial weight,
+   so it gets more vertical room and larger cards than a typical preview grid.
+  */
+
+.catalog-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 32px 64px;
+}
+
+.catalog-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.catalog-heading h2 {
+    font-size: 1.8rem;
+    color: var(--brand-olive-dark);
+    margin: 0;
+}
+
+.catalog-subtitle {
+    color: var(--text-muted);
+    margin: 0 0 24px;
+}
+
+.catalog-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.filter-pill {
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.filter-pill.active {
+    background-color: var(--brand-olive);
+    color: var(--surface-white);
+    border-color: var(--brand-olive);
+}
+
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+}
+
+.product-card {
+    background-color: var(--surface-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card .product-image {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+
+.product-card .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-card .product-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+.product-card h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.product-card .scientific-name {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0 0 4px;
+}
+
+.availability-badge {
+    display: inline-block;
+    /* The raw flower_stock.status value, so the card matches the database. */
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    width: fit-content;
+    margin-bottom: 0;
+}
+
+.availability-badge.in-stock {
+    background-color: #E4EDD8;
+    color: #3E5C2E;
+}
+
+.availability-badge.restock {
+    background-color: #F5E7C6;
+    color: #8A6417;
+}
+
+.availability-badge.import {
+    background-color: #E2E6F2;
+    color: #3A4A85;
+}
+
+.availability-badge.not-for-sale {
+    background-color: #EDE9E4;
+    color: #7A6F66;
+}
+
+.product-price {
+    font-weight: 700;
+    color: var(--brand-olive-dark);
+    margin: 6px 0 0;
+}
+
+.product-price .price-unit {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* No price at all: the flower is NOT_FOR_SALE and the card must not quote one. */
+.product-price.unavailable {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.bundle-price {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 2px 0 0;
+}
+
+/* Pinned to the bottom so cards of different text lengths still line up. */
+.product-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+}
+
+.btn-add-cart {
+    background-color: var(--brand-olive);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 7px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-add-cart img {
+    width: 18px;
+    height: 18px;
+    /* The icon is dark; the button is olive. */
+    filter: brightness(0) invert(1);
+}
+
+.btn-add-cart:hover {
+    background-color: var(--brand-olive-dark);
+}
+
+.btn-add-cart.added {
+    transform: scale(0.92);
+}
+
+/* Nothing to add: there is no price, so there is nothing to buy. */
+.btn-add-cart:disabled {
+    background-color: #D8D4C8;
+    cursor: not-allowed;
+}
+
+/* No photograph yet: a tinted frame reads better than a broken image glyph. */
+.product-image.missing,
+.creation-image.missing {
+    background-image: linear-gradient(135deg, #EFEDE2 0%, #E4E0CE 100%);
+}
+
+.catalog-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+/* The pills are links, so they need the anchor reset the rest of the page has. */
+.catalog-filters a.filter-pill {
+    text-decoration: none;
+    color: var(--text-dark);
+}
+
+.catalog-filters a.filter-pill.active {
+    color: var(--surface-white);
+}
+
+.catalog-sorts {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.catalog-sorts .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.catalog-sorts select {
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    min-width: 190px;
+}
+
+.catalog-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+}
+
+.catalog-empty {
+    background-color: var(--surface-white);
+    border: 1px dashed var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/*
+   Catalog page - the full shelf, plus the composed creations underneath it.
+*/
+
+.page-intro {
+    padding-bottom: 8px;
+}
+
+.page-intro h1 {
+    margin: 0 0 6px;
+    font-size: 2.4rem;
+}
+
+.page-intro p {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.creations-section {
+    margin-top: 48px;
+}
+
+.creations-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 20px;
+}
+
+.creations-group-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+    margin: 0 0 14px;
+}
+
+.creations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.creation-card {
+    background-color: var(--surface-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+}
+
+.creation-image {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.creation-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.creation-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-grow: 1;
+}
+
+.creation-body h4 {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.creation-composition {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.creation-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.creation-price {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--brand-olive-dark);
+}
+
+/* 
+   Footer
+*/
+
+.site-footer {
+    background-color: var(--brand-green);
+    color: var(--surface-white);
+    padding: 48px 32px 24px;
+    grid-column: 1 / -1;
+    grid-row: 3;
+}
+
+/* The panel takes the right column outright, so the footer stops beside it. */
+.page-shell.chat-open .site-footer {
+    grid-column: 1;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto 32px;
+}
+
+.footer-grid h4 {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+}
+
+.footer-grid ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.footer-grid li {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.footer-bottom {
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    padding-top: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 
+   Chat panel - Florabelle. Closed by default. Occupies 25% of the page
+   width when opened, never on load, never full width.
+*/
+
+.chat-panel {
+    display: none;
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    background-color: var(--bg-cream);
+    border: 4px solid var(--brand-green);
+    border-radius: var(--radius-panel);
+    /* The header fills the top corners, so the panel has to clip its children. */
+    overflow: hidden;
+    flex-direction: column;
+    height: calc(100vh - var(--header-height) - 24px);
+    margin: 12px 12px 12px 0;
+    position: sticky;
+    top: 12px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.page-shell.chat-open .chat-panel {
+    display: flex;
+}
+
+.chat-header {
+    background-color: var(--brand-green);
+    color: var(--surface-white);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header .chat-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.chat-header .chat-title img {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+
+.chat-name {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.chat-tagline {
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+.chat-close-btn {
+    background: none;
+    border: none;
+    color: var(--surface-white);
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.chat-row.agent {
+    justify-content: flex-start;
+}
+
+.chat-row.user {
+    justify-content: flex-end;
+}
+
+.chat-avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.chat-bubble {
+    max-width: 85%;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    font-size: 0.92rem;
+}
+
+.chat-bubble.agent {
+    background-color: var(--surface-white);
+    box-shadow: var(--shadow-card);
+}
+
+.chat-bubble.user {
+    background-color: var(--brand-olive);
+    color: var(--surface-white);
+}
+
+/* Customer turns are plain text with real line breaks; keep them. */
+.chat-bubble.user .chat-text {
+    white-space: pre-wrap;
+}
+
+.chat-text p {
+    margin: 0 0 8px;
+}
+
+.chat-text p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-list {
+    margin: 0 0 8px;
+    padding-left: 18px;
+}
+
+.chat-list li {
+    margin-bottom: 4px;
+}
+
+.chat-time {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    opacity: 0.6;
+    text-align: right;
+}
+
+/* A quotation number is a real document, so it is linked, never left in prose. */
+.chat-doc-link {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brand-olive-dark);
+}
+
+.chat-typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: 2px 0;
+}
+
+.chat-typing i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--text-muted);
+    animation: chat-blink 1.2s infinite ease-in-out;
+}
+
+.chat-typing i:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chat-typing i:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes chat-blink {
+    0%, 80%, 100% { opacity: 0.25; }
+    40% { opacity: 1; }
+}
+
+.chat-error {
+    margin: 0;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: #8A2E2E;
+    background-color: #F6E3E3;
+}
+
+.chat-input-area {
+    border-top: 1px solid var(--border-soft);
+    padding: 14px 16px;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input-area input[type="text"] {
+    flex-grow: 1;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+}
+
+.chat-send-btn {
+    background-color: var(--accent-gold);
+    border: none;
+    border-radius: var(--radius-md);
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-send-btn img {
+    width: 18px;
+    height: 18px;
+}
+
+.chat-send-btn:disabled,
+.chat-input-area input[type="text"]:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+/*
+   Responsive - below this width the chat panel overlays instead of
+   splitting the grid, since 25% of a small viewport is not usable.
+*/
+@media (max-width: 900px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .benefits {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .creations-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .page-shell.chat-open {
+        grid-template-columns: 1fr;
+    }
+
+    .page-shell.chat-open .site-footer {
+        grid-column: 1 / -1;
+    }
+
+    .chat-panel {
+        grid-column: 1;
+        grid-row: auto;
+        height: calc(100vh - 24px);
+        margin: 12px;
+        position: fixed;
+        top: 12px;
+        right: 0;
+        width: calc(100% - 24px);
+        max-width: 380px;
+        z-index: 50;
+        box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+    }
+}
+/*
+   Flourish layer - the decorative pass over the structural rules above.
+   It only restates properties it means to change, so the layout stays where
+   the earlier sections put it.
+*/
+
+:root {
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --gold-hairline: rgba(224, 168, 62, 0.45);
+    --shadow-lift: 0 14px 32px rgba(45, 55, 5, 0.14);
+}
+
+/* Headings carry the store's voice; the body stays on the sans for legibility. */
+.hero h1,
+.catalog-heading h2,
+.section-heading h2,
+.creations-section h2,
+.footer-grid .logo-text,
+.site-header .logo-text {
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+}
+
+.site-header {
+    border-bottom: 3px solid var(--accent-gold);
+    box-shadow: 0 2px 14px rgba(45, 55, 5, 0.18);
+}
+
+.main-nav a {
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+}
+
+.btn-talk-florabelle,
+.btn-primary,
+.btn-secondary {
+    border-radius: 999px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+                background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-primary {
+    background-color: var(--brand-green);
+    box-shadow: 0 6px 16px rgba(45, 55, 5, 0.22);
+}
+
+.btn-primary:hover,
+.btn-talk-florabelle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+}
+
+.btn-secondary {
+    border: 1.5px solid var(--accent-gold);
+    color: var(--brand-green);
+}
+
+.btn-secondary:hover {
+    background-color: var(--accent-gold);
+    color: var(--brand-green);
+}
+
+/*
+   A petal wash behind the hero. Two soft radial tints plus a cream-to-white
+   gradient, so the top of the page is not a flat block of one colour.
+*/
+.hero {
+    position: relative;
+    padding: 72px 32px 64px;
+    max-width: none;
+    background:
+        radial-gradient(circle at 12% 18%, rgba(224, 168, 62, 0.16), transparent 42%),
+        radial-gradient(circle at 88% 78%, rgba(45, 55, 5, 0.10), transparent 46%),
+        linear-gradient(180deg, #FBF9F1 0%, var(--bg-cream) 100%);
+}
+
+/* The grid itself stays 1200px; only the wash runs full width. */
+.hero > * {
+    max-width: 600px;
+}
+
+.hero {
+    grid-template-columns: minmax(0, 600px) minmax(0, 600px);
+    justify-content: center;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    color: var(--brand-green-dark);
+    font-weight: 700;
+}
+
+/* A gold rule under the headline, in place of a heavier divider. */
+.hero h1::after {
+    content: "";
+    display: block;
+    width: 84px;
+    height: 3px;
+    margin-top: 18px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-gold), transparent);
+}
+
+.hero p {
+    font-size: 1.08rem;
+    line-height: 1.65;
+}
+
+/* A gold frame offset behind the photograph, the way a mounted print sits. */
+.hero-image {
+    position: relative;
+}
+
+.hero-image::before {
+    content: "";
+    position: absolute;
+    inset: 18px -18px -18px 18px;
+    border: 2px solid var(--gold-hairline);
+    border-radius: var(--radius-lg);
+    pointer-events: none;
+}
+
+.hero-image img {
+    position: relative;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lift);
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+/*
+   Benefits become a banded panel rather than four floating items, with hairline
+   dividers between them - the same shape the mockup uses under the hero.
+*/
+.benefits {
+    max-width: 1200px;
+    margin: -28px auto 0;
+    position: relative;
+    z-index: 1;
+    padding: 28px 32px;
+    gap: 0;
+    background: linear-gradient(135deg, #EFE7C8 0%, #E7DEB6 100%);
+    border: 1px solid var(--gold-hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.benefit-item {
+    align-items: center;
+    padding: 0 24px;
+    border-left: 1px solid rgba(45, 55, 5, 0.14);
+}
+
+.benefit-item:first-child {
+    border-left: none;
+}
+
+/* The icons carry their own shape - no medallion, no crop. */
+.benefit-item img {
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+}
+
+.benefit-item h3 {
+    font-size: 1rem;
+    color: var(--brand-green);
+}
+
+.catalog-heading h2,
+.section-heading h2 {
+    color: var(--brand-green);
+    font-size: 2rem;
+}
+
+.filter-pill {
+    transition: background-color var(--transition-fast), color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.filter-pill:hover {
+    border-color: var(--accent-gold);
+}
+
+.filter-pill.active {
+    background-color: var(--brand-green);
+    border-color: var(--brand-green);
+}
+
+/* Cards lift and their photograph breathes on hover. */
+.product-card,
+.creation-card {
+    border: 1px solid var(--border-soft);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.product-card:hover,
+.creation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+}
+
+.product-card .product-image img {
+    transition: transform 420ms ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--brand-green);
+}
+
+.product-price {
+    color: var(--brand-green);
+    font-size: 1.05rem;
+}
+
+.btn-add-cart {
+    background-color: var(--brand-green);
+    border-radius: 999px;
+}
+
+.btn-add-cart:hover {
+    background-color: var(--accent-gold);
+}
+
+.btn-add-cart:hover img {
+    filter: none;
+}
+
+/*
+   Footer - a botanical watermark in the bottom-left corner, drawn from the
+   icon set rather than a new asset, and kept faint enough to stay behind text.
+*/
+.site-footer {
+    position: relative;
+    border-top: 3px solid var(--accent-gold);
+    background-image:
+        radial-gradient(circle at 8% 120%, rgba(224, 168, 62, 0.18), transparent 38%);
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: "";
+    position: absolute;
+    left: -40px;
+    bottom: -50px;
+    width: 260px;
+    height: 260px;
+    background: url("/assets/icons/pretty_flower.svg") no-repeat center / contain;
+    opacity: 0.07;
+    filter: brightness(0) invert(1);
+    pointer-events: none;
+}
+
+.footer-grid,
+.footer-bottom {
+    position: relative;
+}
+
+.footer-grid .logo-text {
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+}
+
+.footer-grid h4 {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    color: var(--accent-gold);
+    font-size: 1rem;
+}
+
+.footer-grid a {
+    transition: color var(--transition-fast);
+}
+
+.footer-grid a:hover {
+    color: var(--accent-gold);
+}
+
+/* The chat panel is the product's signature; give its frame the gold hairline too. */
+.chat-panel {
+    box-shadow: var(--shadow-lift);
+    outline: 1px solid var(--gold-hairline);
+    outline-offset: -6px;
+}
+
+.chat-header {
+    border-bottom: 2px solid var(--accent-gold);
+}
+
+@media (max-width: 900px) {
+    .hero {
+        grid-template-columns: 1fr;
+        justify-content: stretch;
+    }
+
+    .hero > * {
+        max-width: none;
+    }
+
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero-image::before {
+        display: none;
+    }
+
+    .benefits {
+        margin-top: 0;
+    }
+
+    .benefit-item {
+        border-left: none;
+        padding: 12px 0;
+    }
+}
+
+/*
+   Botanical accents. Both are decorative only - empty alt, pointer-events off,
+   and hidden on narrow screens where there is no room to spare.
+*/
+
+/* Marigold beside the logo. It overflows the bar slightly, which is the point. */
+.header-bloom {
+    height: 74px;
+    width: auto;
+    margin: -18px 0 -18px 4px;
+    flex-shrink: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35));
+}
+
+/* Wraps the bloom so the admin entry point can sit tucked under it. */
+.header-bloom-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Deliberately understated: a customer never needs to notice this. */
+.admin-link {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    opacity: 0.55;
+    transition: opacity var(--transition-fast, 0.2s ease);
+}
+
+.admin-link:hover,
+.admin-link:focus-visible {
+    opacity: 1;
+}
+
+.admin-link svg {
+    width: 11px;
+    height: 11px;
+    fill: var(--surface-white, #fff);
+}
+
+/*
+   Cartucho down the left edge of the page body, behind the content. The main
+   content needs the stacking context, otherwise the bloom paints over the
+   catalog cards instead of behind them.
+*/
+.main-content {
+    position: relative;
+}
+
+.body-bloom {
+    position: absolute;
+    left: -70px;
+    top: 46vh;
+    width: 280px;
+    height: auto;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+.main-content > section {
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 900px) {
+    .header-bloom,
+    .body-bloom {
+        display: none;
+    }
+}
+
+/*
+   Cards in garden green. The body inverts to light text; the photograph is
+   untouched, so the green reads as a mount around it.
+*/
+
+.product-card,
+.creation-card {
+    background-color: var(--brand-green);
+    border-color: var(--brand-green-dark);
+    color: #F2EFE0;
+}
+
+.product-card h3,
+.creation-card h4 {
+    color: #FFFFFF;
+}
+
+.product-card .scientific-name,
+.creation-card .creation-composition,
+.bundle-price {
+    color: rgba(242, 239, 224, 0.72);
+}
+
+/* Gold is the only price colour with enough contrast on the green. */
+.product-price,
+.creation-price {
+    color: var(--accent-gold);
+}
+
+.product-price .price-unit {
+    color: rgba(242, 239, 224, 0.72);
+}
+
+.product-price.unavailable {
+    color: rgba(242, 239, 224, 0.66);
+}
+
+/* The footer rule was invisible against white; on green it separates the row. */
+.product-footer,
+.creation-footer {
+    border-top: 1px solid rgba(224, 168, 62, 0.28);
+}
+
+/* The button was green on green, so it inverts to gold here. */
+.product-card .btn-add-cart,
+.creation-card .btn-add-cart {
+    background-color: var(--accent-gold);
+}
+
+.product-card .btn-add-cart img,
+.creation-card .btn-add-cart img {
+    filter: none;
+}
+
+.product-card .btn-add-cart:hover,
+.creation-card .btn-add-cart:hover {
+    background-color: #FFFFFF;
+}
+
+.product-card .btn-add-cart:disabled {
+    background-color: rgba(242, 239, 224, 0.18);
+    cursor: not-allowed;
+}
+
+.product-card .btn-add-cart:disabled img {
+    filter: brightness(0) invert(1);
+    opacity: 0.45;
+}
+
+/*
+   Photo attachments in the chat. The panel is the drop target, not the input
+   row: a customer aims at Florabelle, not at a 40px button.
+*/
+
+/* The overlay anchors to the panel, which is already position: sticky above. */
+.chat-panel.dragging {
+    border-color: var(--accent-gold);
+}
+
+.chat-dropzone {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    padding: 24px;
+    background-color: rgba(45, 55, 5, 0.92);
+    color: var(--surface-white);
+    /* The overlay must not eat the drop; the panel below it is the listener. */
+    pointer-events: none;
+}
+
+.chat-dropzone[hidden] {
+    display: none;
+}
+
+.chat-dropzone img {
+    width: 64px;
+    height: 64px;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.chat-dropzone p {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.chat-dropzone span {
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+/* The pending attachment, between the thread and the input row. */
+.chat-attachment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 12px 8px;
+    padding: 8px;
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+}
+
+.chat-attachment[hidden] {
+    display: none;
+}
+
+.chat-attachment-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.chat-attachment-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.chat-attachment-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-attachment-size {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.chat-attachment-remove {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--text-muted);
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+
+.chat-attachment-remove:hover {
+    color: var(--brand-green);
+}
+
+.chat-attach-btn {
+    background: none;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 8px;
+    line-height: 0;
+    flex-shrink: 0;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.chat-attach-btn:hover:not(:disabled) {
+    border-color: var(--accent-gold);
+    background-color: rgba(224, 168, 62, 0.12);
+}
+
+.chat-attach-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.chat-attach-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+/* The photo inside a sent turn, and the note a replayed turn shows instead. */
+.chat-sent-photo {
+    max-width: 200px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+}
+
+.chat-photo-note {
+    display: block;
+    font-size: 0.75rem;
+    font-style: italic;
+    opacity: 0.75;
+    margin-bottom: 4px;
+}
+
+/*
+   Vision provenance badge. Rendered from the response's vision object, never
+   from the agent's prose - it is the visible proof that the species came from
+   the project's own trained network.
+*/
+
+.vision-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 8px 0 6px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--brand-green);
+    border-radius: 0 6px 6px 0;
+    background-color: rgba(45, 55, 5, 0.07);
+}
+
+/* Below the trust threshold the agent decided, and the badge must not imply otherwise. */
+.vision-badge.uncertain {
+    border-left-color: var(--accent-gold);
+    background-color: rgba(224, 168, 62, 0.12);
+}
+
+.vision-badge-model {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brand-green);
+    font-weight: 700;
+}
+
+.vision-badge.uncertain .vision-badge-model {
+    color: #8A6417;
+}
+
+.vision-badge-detail {
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.vision-badge-latin {
+    font-size: 0.72rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* Sobre Nosotros and Como Funciona. Both pages are long-form corporate text,
+   so they share one set of blocks rather than each growing their own. */
+.info-intro {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px 8px;
+}
+.info-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 32px;
+}
+.info-lead {
+    color: var(--text-muted);
+    margin: 0 0 22px;
+    max-width: 68ch;
+}
+.info-quote {
+    max-width: 1200px;
+    margin: 18px auto 0;
+    padding: 0 32px;
+}
+.info-quote blockquote,
+.info-panel blockquote {
+    margin: 0;
+    padding: 26px 30px;
+    background: linear-gradient(135deg, #EFE7C8 0%, #E7DEB6 100%);
+    border: 1px solid var(--gold-hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    line-height: 1.7;
+    color: var(--brand-green);
+}
+.info-panel blockquote {
+    font-size: 1rem;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+}
+.info-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.info-columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+.info-card {
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 22px 24px;
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.info-card:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+}
+.info-card h3 {
+    margin: 0 0 10px;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--brand-green);
+}
+.info-card p {
+    margin: 0;
+    color: var(--text-dark);
+    line-height: 1.65;
+}
+.info-card ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-dark);
+    line-height: 1.7;
+}
+.info-card-can {
+    border-left: 3px solid var(--brand-olive);
+}
+.info-card-cannot {
+    border-left: 3px solid var(--accent-gold);
+}
+.info-decision {
+    margin: 14px 0 0 !important;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 0.9rem;
+    color: var(--text-muted) !important;
+}
+.info-decision-label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brand-olive-dark);
+    margin-bottom: 4px;
+}
+.info-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 28px;
+}
+.info-list li {
+    padding-left: 18px;
+    border-left: 2px solid var(--brand-olive);
+    line-height: 1.65;
+}
+.info-list strong {
+    color: var(--brand-green);
+}
+.info-cities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+.info-cities span {
+    padding: 7px 16px;
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: var(--brand-green);
+}
+.info-split {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+}
+.info-panel h2 {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    color: var(--brand-green);
+    margin: 0 0 14px;
+}
+.info-ticks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.info-ticks li {
+    position: relative;
+    padding: 0 0 10px 22px;
+    line-height: 1.65;
+}
+.info-ticks li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+}
+.info-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: none;
+}
+.info-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 0 0 26px;
+    position: relative;
+}
+.info-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 21px;
+    top: 46px;
+    bottom: 4px;
+    width: 1px;
+    background: var(--border-soft);
+}
+.info-step-number {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--brand-green);
+    color: var(--bg-cream);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    z-index: 1;
+}
+.info-step-body h3 {
+    margin: 8px 0 6px;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--brand-green);
+}
+.info-step-body p {
+    margin: 0;
+    line-height: 1.7;
+    max-width: 72ch;
+}
+.info-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+.info-status {
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 20px;
+}
+.info-status h3 {
+    margin: 12px 0 8px;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--brand-green);
+}
+.info-status p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+.info-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+.info-metric {
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-top: 3px solid var(--brand-olive);
+    border-radius: var(--radius-md);
+    padding: 20px 22px;
+}
+.info-metric-figure {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--accent-gold);
+}
+.info-metric h3 {
+    margin: 10px 0 6px;
+    font-size: 1rem;
+    color: var(--brand-green);
+}
+.info-metric p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+.info-note {
+    max-width: 78ch;
+    margin: 22px 0 0;
+    padding: 16px 20px;
+    background: rgba(224, 168, 62, 0.09);
+    border-left: 3px solid var(--accent-gold);
+    border-radius: var(--radius-md);
+    font-size: 0.94rem;
+    line-height: 1.65;
+    color: var(--text-dark);
+}
+.info-note code {
+    font-size: 0.88em;
+    padding: 1px 5px;
+    background: rgba(45, 55, 5, 0.08);
+    border-radius: 4px;
+}
+.info-closing {
+    text-align: center;
+    padding-bottom: 56px;
+}
+.info-closing h2 {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    color: var(--brand-green);
+    margin: 0 0 12px;
+}
+.info-closing p {
+    max-width: 70ch;
+    margin: 0 auto 22px;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+.info-closing .hero-actions {
+    justify-content: center;
+}
+
+@media (max-width: 900px) {
+    .info-columns,
+    .info-columns-2,
+    .info-split,
+    .info-list,
+    .info-status-grid,
+    .info-metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Product page, and the two text fields the card gained with it. */
+.product-name {
+    text-decoration: none;
+    color: inherit;
+}
+.product-name h3 {
+    transition: color var(--transition-fast);
+}
+.product-name:hover h3 {
+    color: var(--brand-olive-dark);
+}
+.card-meaning {
+    margin: 6px 0 4px;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--brand-green);
+}
+.card-description {
+    margin: 0 0 10px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card-detail-link {
+    font-size: 0.8rem;
+    color: var(--brand-olive-dark);
+    text-decoration: none;
+    border-bottom: 1px solid var(--gold-hairline);
+}
+.card-detail-link:hover {
+    color: var(--brand-green);
+}
+
+.breadcrumb {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 32px 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+}
+.breadcrumb a {
+    color: var(--brand-olive-dark);
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.flower-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 32px 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 40px;
+    align-items: start;
+}
+.flower-gallery {
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.flower-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.flower-summary h1 {
+    margin: 0 0 4px;
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    color: var(--brand-green);
+}
+.flower-scientific {
+    margin: 0 0 16px;
+    font-style: italic;
+    color: var(--text-muted);
+}
+.flower-meaning {
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #EFE7C8 0%, #E7DEB6 100%);
+    border: 1px solid var(--gold-hairline);
+    border-radius: var(--radius-md);
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: var(--brand-green);
+}
+.flower-availability {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.flower-availability-label {
+    color: var(--text-dark);
+}
+.flower-stock-count,
+.flower-eta {
+    padding-left: 10px;
+    border-left: 1px solid var(--border-soft);
+}
+.flower-pricing {
+    padding: 18px 20px;
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+}
+.flower-price {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    color: var(--brand-green);
+}
+.flower-pricing.unavailable .flower-price {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+.flower-unavailable-note {
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+.flower-bundle {
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+.flower-bundle strong {
+    color: var(--brand-green);
+    font-size: 1.05rem;
+}
+.flower-bundle-discount {
+    flex-basis: 100%;
+    font-size: 0.82rem;
+    color: var(--brand-olive-dark);
+}
+.flower-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.flower-actions .btn-primary[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.flower-facts {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-soft);
+}
+.flower-facts dt {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brand-olive-dark);
+    margin-bottom: 4px;
+}
+.flower-facts dd {
+    margin: 0;
+    color: var(--text-dark);
+}
+.flower-facts dd.latin {
+    font-style: italic;
+}
+.flower-about,
+.flower-care {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 32px;
+}
+.flower-about p {
+    margin: 0;
+    max-width: 76ch;
+    line-height: 1.75;
+    color: var(--text-dark);
+}
+
+@media (max-width: 900px) {
+    .flower-detail {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    .flower-summary h1 {
+        font-size: 1.9rem;
+    }
+}
+
+/* Contact page and the shared error page. */
+.contact-card {
+    display: flex;
+    flex-direction: column;
+}
+.contact-card .btn-primary {
+    align-self: flex-start;
+    margin-top: auto;
+}
+.contact-value {
+    margin: 12px 0 4px !important;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--brand-green) !important;
+}
+.contact-value a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--gold-hairline);
+}
+.contact-value a:hover {
+    color: var(--brand-olive-dark) !important;
+}
+.contact-note {
+    margin: 0 !important;
+    font-size: 0.86rem;
+    color: var(--text-muted) !important;
+}
+.contact-note a {
+    color: var(--brand-olive-dark);
+}
+
+.error-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 72px 32px 88px;
+    text-align: center;
+}
+.error-code {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 5.5rem;
+    line-height: 1;
+    color: var(--brand-olive);
+    opacity: 0.55;
+}
+.error-page h1 {
+    margin: 8px 0 14px;
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    color: var(--brand-green);
+}
+.error-message {
+    margin: 0 auto 22px;
+    max-width: 56ch;
+    line-height: 1.75;
+    color: var(--text-muted);
+}
+.error-path {
+    margin: 0 auto 26px;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+}
+.error-path code {
+    padding: 2px 8px;
+    background: rgba(45, 55, 5, 0.08);
+    border-radius: 4px;
+    word-break: break-all;
+}
+.error-actions {
+    justify-content: center;
+    margin-bottom: 28px;
+}
+.error-help {
+    margin: 0 auto 14px;
+    max-width: 52ch;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+    .error-code {
+        font-size: 3.8rem;
+    }
+    .error-page h1 {
+        font-size: 1.6rem;
+    }
+}
+
+/* Cart page. */
+.cart-empty {
+    text-align: center;
+    max-width: 620px;
+    padding-top: 40px;
+    padding-bottom: 64px;
+}
+.cart-empty h2 {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    color: var(--brand-green);
+    margin: 0 0 12px;
+}
+.cart-empty p {
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin: 0 auto 22px;
+}
+.cart-empty .hero-actions {
+    justify-content: center;
+}
+.cart-layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 32px 64px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 32px;
+    align-items: start;
+}
+.cart-line {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto auto;
+    gap: 18px;
+    align-items: center;
+    padding: 16px;
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 14px;
+}
+.cart-line.unavailable {
+    opacity: 0.72;
+    border-left: 3px solid var(--accent-gold);
+}
+.cart-line-image {
+    display: block;
+    width: 96px;
+    height: 96px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-cream);
+}
+.cart-line-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.cart-line-name {
+    text-decoration: none;
+    color: inherit;
+}
+.cart-line-name h3 {
+    margin: 0 0 2px;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--brand-green);
+}
+.cart-line-name:hover h3 {
+    color: var(--brand-olive-dark);
+}
+.cart-line-unit {
+    margin: 8px 0 0;
+    color: var(--text-dark);
+}
+.cart-line-warning {
+    margin: 8px 0 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: var(--brand-olive-dark);
+}
+.cart-line-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.qty-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border-soft);
+    background: var(--bg-cream);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--brand-green);
+    transition: background var(--transition-fast);
+}
+.qty-btn:hover {
+    background: var(--brand-olive);
+    color: var(--surface-white);
+}
+.qty-value {
+    min-width: 34px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+}
+.cart-line-total {
+    text-align: right;
+    min-width: 120px;
+    font-family: var(--font-display);
+    color: var(--brand-green);
+}
+.cart-line-total .no-price {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+.cart-remove {
+    display: block;
+    margin-top: 6px;
+    margin-left: auto;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+}
+.cart-remove:hover {
+    color: var(--brand-green);
+}
+.cart-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 4px;
+}
+.cart-continue {
+    color: var(--brand-olive-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--gold-hairline);
+}
+.cart-clear {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+}
+.cart-summary {
+    position: sticky;
+    top: calc(var(--header-height) + 16px);
+    padding: 24px;
+    background: var(--surface-white);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+.cart-summary h2 {
+    margin: 0 0 16px;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--brand-green);
+}
+.cart-totals {
+    margin: 0 0 16px;
+}
+.cart-totals > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0;
+    font-size: 0.92rem;
+}
+.cart-totals dt {
+    color: var(--text-muted);
+}
+.cart-totals dd {
+    margin: 0;
+    color: var(--text-dark);
+}
+.cart-discount dd {
+    color: var(--brand-olive-dark) !important;
+}
+.cart-total-row {
+    margin-top: 6px;
+    padding-top: 12px !important;
+    border-top: 1px solid var(--border-soft);
+}
+.cart-total-row dt,
+.cart-total-row dd {
+    font-family: var(--font-display);
+    font-size: 1.2rem !important;
+    color: var(--brand-green) !important;
+}
+.cart-quote {
+    width: 100%;
+    margin-bottom: 14px;
+}
+.cart-note {
+    margin: 0 0 12px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+    .cart-layout {
+        grid-template-columns: 1fr;
+    }
+    .cart-line {
+        grid-template-columns: 72px minmax(0, 1fr);
+    }
+    .cart-line-image {
+        width: 72px;
+        height: 72px;
+    }
+    .cart-summary {
+        position: static;
+    }
+}
