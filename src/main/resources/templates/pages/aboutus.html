@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Sobre Nosotros - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('sobre-nosotros')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <section class="page-intro info-intro">
+            <h1>Sobre Nosotros</h1>
+            <p>
+                Comercializadora mayorista y de comercio electronico de flores
+                frescas, establecida y operando en Colombia.
+            </p>
+        </section>
+
+        <section class="info-quote">
+            <blockquote>
+                En Spring-Bloom transformamos la manera en que Colombia experimenta
+                la belleza y frescura de las flores. Nacimos para conectar la
+                maestria de los mejores cultivadores locales con quienes buscan
+                diseno, calidad y confiabilidad absoluta. Ya sea que necesite un
+                ramo unico para una ocasion especial, flores para embellecer sus
+                espacios corporativos o un suministro mayorista constante para su
+                negocio de floristeria, garantizamos frescura optima, precios
+                transparentes y una experiencia de compra impecable.
+            </blockquote>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Quienes somos</h2>
+            </div>
+            <div class="info-columns">
+                <article class="info-card">
+                    <h3>Que hacemos</h3>
+                    <p>
+                        Operamos como una plataforma integral de suministro floral:
+                        seleccion, almacenamiento en cadena de frio, control de
+                        calidad, diseno personalizado, comercializacion digital y
+                        distribucion a nivel nacional en Colombia.
+                    </p>
+                </article>
+                <article class="info-card">
+                    <h3>A quien servimos</h3>
+                    <p>
+                        Conectamos la produccion floral de la sabana colombiana y
+                        otras regiones agricolas con clientes urbanos, floristas
+                        profesionales, organizadores de bodas, planificadores de
+                        eventos, empresas y consumidores finales.
+                    </p>
+                </article>
+                <article class="info-card">
+                    <h3>Que nos diferencia</h3>
+                    <p>
+                        A diferencia de una floristeria de barrio, operamos con
+                        estandares industriales de poscosecha, trazabilidad digital,
+                        control termico en la ultima milla y atencion automatizada
+                        con Florabelle, nuestra asistente de IA.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Productos y servicios</h2>
+            </div>
+            <ul class="info-list">
+                <li>
+                    <strong>Flores frescas cortadas.</strong>
+                    Venta por tallo individual y unidades comerciales: ramos base y
+                    cajas de cultivo.
+                </li>
+                <li>
+                    <strong>Arreglos y ramos personalizados.</strong>
+                    Disenos florales exclusivos para ocasiones especiales,
+                    corporativas y de uso cotidiano.
+                </li>
+                <li>
+                    <strong>Guirnaldas y coronas florales.</strong>
+                    Disenos botanicos complejos para eventos, decoracion
+                    arquitectonica y celebraciones.
+                </li>
+                <li>
+                    <strong>Arreglos institucionales y corporativos.</strong>
+                    Suministro periodico para oficinas, hoteles, restaurantes y
+                    eventos corporativos.
+                </li>
+                <li>
+                    <strong>Flores importadas bajo pedido.</strong>
+                    Especies exoticas o de temporada no nativas de Colombia,
+                    adquiridas mediante socios internacionales verificados.
+                </li>
+                <li>
+                    <strong>Canal mayorista (B2B).</strong>
+                    Suministro a floristerias independientes, decoradores y
+                    organizadores de eventos, con tarifas preferenciales.
+                </li>
+            </ul>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Cobertura</h2>
+            </div>
+            <p class="info-lead">
+                Atendemos principalmente el mercado colombiano, con enfoque en
+                centros urbanos de alta actividad comercial y residencial.
+            </p>
+            <div class="info-cities">
+                <span>Bogota</span>
+                <span>Medellin</span>
+                <span>Cali</span>
+                <span>Barranquilla</span>
+                <span>Cartagena</span>
+                <span>Bucaramanga</span>
+            </div>
+            <div class="info-columns info-columns-2">
+                <article class="info-card">
+                    <h3>Clientes B2C</h3>
+                    <p>
+                        Amantes de la decoracion, compradores de regalos y
+                        organizadores de eventos particulares.
+                    </p>
+                </article>
+                <article class="info-card">
+                    <h3>Clientes B2B</h3>
+                    <p>
+                        Floristas independientes, empresas de diseno de interiores,
+                        hoteles, marcas de lujo y planificadores de bodas.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section info-split">
+            <article class="info-panel">
+                <h2>Mision</h2>
+                <blockquote>
+                    Proveer flores frescas de la mas alta calidad y soluciones
+                    florales excepcionales en Colombia mediante un modelo de
+                    comercio electronico avanzado y suministro mayorista confiable,
+                    garantizando procesos sostenibles, servicio al cliente impecable
+                    y relaciones comerciales transparentes.
+                </blockquote>
+                <ul class="info-ticks">
+                    <li>Nunca comprometer la frescura ni la durabilidad.</li>
+                    <li>Disponibilidad constante y cadena de suministro robusta.</li>
+                    <li>Respuestas rapidas, empaticas y precisas.</li>
+                    <li>Entregas puntuales con proteccion termica y fisica.</li>
+                    <li>Minimo impacto ambiental en empaques y residuos.</li>
+                    <li>Relaciones justas con productores locales.</li>
+                </ul>
+            </article>
+            <article class="info-panel">
+                <h2>Vision</h2>
+                <blockquote>
+                    Consolidarnos para el ano 2030 como la empresa lider de comercio
+                    electronico y suministro mayorista de flores en Colombia,
+                    reconocida por su excelencia operativa, innovacion tecnologica y
+                    compromiso absoluto con la sostenibilidad.
+                </blockquote>
+                <ul class="info-ticks">
+                    <li>Liderazgo tecnologico con IA y analisis predictivo.</li>
+                    <li>Plataforma omnicanal B2C y B2B en tiempo real.</li>
+                    <li>Abastecimiento sostenible con fincas certificadas.</li>
+                    <li>Logistica de ultima milla con cadena de frio.</li>
+                    <li>Centros de distribucion en todo el territorio nacional.</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Nuestros valores</h2>
+            </div>
+            <p class="info-lead">
+                Cada valor lleva una decision comercial concreta detras: es lo que
+                hacemos cuando el valor cuesta algo.
+            </p>
+            <div class="info-columns">
+                <article class="info-card" th:each="value : ${values}">
+                    <h3 th:text="${value.name}">Valor</h3>
+                    <p th:text="${value.description}">Descripcion</p>
+                    <p class="info-decision">
+                        <span class="info-decision-label">Decision comercial</span>
+                        <span th:text="${value.decision}">Decision</span>
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Nuestros objetivos</h2>
+            </div>
+            <div class="info-metrics">
+                <article class="info-metric" th:each="objective : ${objectives}">
+                    <span class="info-metric-figure" th:text="${objective.figure}">0%</span>
+                    <h3 th:text="${objective.name}">Objetivo</h3>
+                    <p th:text="${objective.description}">Descripcion</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section info-closing">
+            <h2>Compromiso con la calidad, la trazabilidad y el servicio</h2>
+            <p>
+                Asumimos un compromiso inquebrantable con la frescura, el origen
+                etico y la transparencia operativa. Cada tallo comercializado pasa
+                por un proceso de inspeccion riguroso que garantiza su durabilidad y
+                belleza, desde el cultivo hasta las manos del cliente final.
+            </p>
+            <div class="hero-actions">
+                <a href="/catalogo" class="btn-primary">Explorar Catalogo</a>
+                <a href="/como-funciona" class="btn-secondary">Como Funciona</a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

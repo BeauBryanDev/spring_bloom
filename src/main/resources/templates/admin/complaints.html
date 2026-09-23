@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Reclamos - Panel Admin - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f6f4f2; color: #222; margin: 0; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center;
+                        padding: 1rem 2rem; background: #1c1c1e; color: #fff; }
+        .admin-header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        .admin-header a.active { color: #fff; font-weight: 700; }
+        main { padding: 2rem; max-width: 900px; margin: 0 auto; }
+        h1 { margin-top: 0; }
+        .claim { background: white; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem;
+                 box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .claim-top { display: flex; justify-content: space-between; align-items: baseline; }
+        .claim-number { font-weight: 700; }
+        .badge { padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .badge.OPEN { background: #fde3e3; color: #a11; }
+        .badge.IN_REVIEW { background: #fff4d9; color: #8a5a00; }
+        .badge.RESOLVED { background: #e3f4e3; color: #187a18; }
+        .badge.REJECTED { background: #eee; color: #666; }
+        .claim-desc { margin: 0.75rem 0; font-size: 0.9rem; color: #444; }
+        .claim-meta { font-size: 0.8rem; color: #888; margin-bottom: 0.75rem; }
+        .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .actions form { display: flex; gap: 0.4rem; align-items: center; }
+        button { padding: 0.4rem 0.8rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        button.review { background: #fff4d9; color: #8a5a00; }
+        button.resolve { background: #e3f4e3; color: #187a18; }
+        button.reject { background: #eee; color: #666; }
+        input.resolution-text { padding: 0.35rem 0.5rem; border-radius: 6px; border: 1px solid #ccc; font-size: 0.8rem; width: 220px; }
+        .resolution-note { font-size: 0.85rem; color: #187a18; font-style: italic; }
+        .empty { color: #999; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-nav :: nav('complaints')}"></div>
+
+<main>
+    <h1>Reclamos</h1>
+    <p class="empty" th:if="${#lists.isEmpty(complaints)}">No hay reclamos todavia.</p>
+
+    <div class="claim" th:each="c : ${complaints}">
+        <div class="claim-top">
+            <span class="claim-number" th:text="${c.complaintNumber()}">REC-</span>
+            <span class="badge" th:classappend="${c.status()}" th:text="${c.status()}">OPEN</span>
+        </div>
+        <div class="claim-meta">
+            <span th:text="${c.type()}">TYPE</span>
+            <span th:if="${c.order().isPresent()}"> - pedido asociado: <span th:text="${c.order().get()}">-</span></span>
+            <span th:unless="${c.order().isPresent()}"> - sin pedido asociado</span>
+        </div>
+        <p class="claim-desc" th:text="${c.description()}">Descripcion</p>
+
+        <p class="resolution-note" th:if="${c.resolutionText().isPresent()}"
+           th:text="'Resolucion: ' + ${c.resolutionText().get()}">-</p>
+
+        <div class="actions" th:if="${c.open()}">
+            <form method="post" th:action="@{'/admin/complaints/' + ${c.complaintNumber()} + '/review'}"
+                  th:if="${c.status().name() == 'OPEN'}">
+                <button class="review" type="submit">Tomar en revision</button>
+            </form>
+
+            <form method="post" th:action="@{'/admin/complaints/' + ${c.complaintNumber()} + '/resolve'}">
+                <input type="hidden" name="outcome" value="RESOLVED"/>
+                <input class="resolution-text" type="text" name="resolution" placeholder="Como se resolvio" required/>
+                <button class="resolve" type="submit">Resolver</button>
+            </form>
+
+            <form method="post" th:action="@{'/admin/complaints/' + ${c.complaintNumber()} + '/resolve'}">
+                <input type="hidden" name="outcome" value="REJECTED"/>
+                <input class="resolution-text" type="text" name="resolution" placeholder="Motivo del rechazo" required/>
+                <button class="reject" type="submit">No procede</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

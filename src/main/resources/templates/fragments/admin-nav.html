@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="nav(activePage)" class="admin-header">
+    <strong>Spring-Bloom - Panel Admin</strong>
+    <nav style="display:flex; gap:1.25rem; align-items:center;">
+        <a th:href="@{/admin}" th:classappend="${activePage == 'dashboard'} ? 'active'">Resumen</a>
+        <a th:href="@{/admin/stock}" th:classappend="${activePage == 'stock'} ? 'active'">Stock</a>
+        <a th:href="@{/admin/orders}" th:classappend="${activePage == 'orders'} ? 'active'">Pedidos</a>
+        <a th:href="@{/admin/complaints}" th:classappend="${activePage == 'complaints'} ? 'active'">Reclamos</a>
+        <form method="post" th:action="@{/admin/logout}" style="margin:0;">
+            <button type="submit" style="background:none;border:none;color:#fff;cursor:pointer;">Cerrar sesion</button>
+        </form>
+    </nav>
+</div>
+
+</body>
+</html>

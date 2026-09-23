@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${flower.commonName} + ' - Spring-Bloom'">Flor - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" th:attr="content=${flower.description}"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('catalogo')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <nav class="breadcrumb">
+            <a href="/">Inicio</a>
+            <span>/</span>
+            <a href="/catalogo">Catalogo</a>
+            <span>/</span>
+            <span th:text="${flower.commonName}">Rosa</span>
+        </nav>
+
+        <section class="flower-detail">
+
+            <div class="flower-gallery">
+                <img th:src="@{'/assets/flowers/' + ${flower.imagePath}}"
+                     th:alt="${flower.commonName}"/>
+            </div>
+
+            <div class="flower-summary">
+                <h1 th:text="${flower.commonName}">Rosa</h1>
+                <p class="flower-scientific" th:text="${flower.scientificName}">Rosa spp.</p>
+
+                <p class="flower-meaning" th:if="${flower.symbolicMeaning != null}"
+                   th:text="${flower.symbolicMeaning}">Amor, pasion y respeto profundo.</p>
+
+                <div class="flower-availability">
+                    <span class="availability-badge"
+                          th:classappend="${flower.availability == 'IN_STOCK'} ? 'in-stock' : (${flower.availability == 'INCOMING_RESTOCK'} ? 'restock' : (${flower.availability == 'IMPORT_ON_REQUEST'} ? 'import' : 'not-for-sale'))"
+                          th:text="${flower.availability}">IN_STOCK</span>
+                    <span class="flower-availability-label" th:text="${flower.availabilityLabel}">En stock</span>
+                    <span class="flower-stock-count"
+                          th:if="${flower.availability == 'IN_STOCK'}"
+                          th:text="${flower.quantity} + ' tallos disponibles'">120 tallos disponibles</span>
+                    <span class="flower-eta" th:if="${flower.etaDays != null}"
+                          th:text="'Llega en ' + ${flower.etaDays} + ' dias'">Llega en 3 dias</span>
+                </div>
+
+                <div class="flower-pricing" th:if="${flower.price != null}">
+                    <p class="flower-price">
+                        <span th:text="${flower.price}">$4.448 COP</span>
+                        <span class="price-unit">/tallo</span>
+                    </p>
+                    <p class="flower-bundle">
+                        <span th:text="'Bouquet de ' + ${flower.bouquetStems} + ' tallos'">Bouquet de 15 tallos</span>
+                        <strong th:text="${flower.bouquetPrice}">$56.712 COP</strong>
+                        <span class="flower-bundle-discount"
+                              th:text="'incluye ' + ${flower.bouquetDiscount} + '% de descuento por volumen'">
+                            incluye 15% de descuento por volumen
+                        </span>
+                    </p>
+                </div>
+
+                <!--
+                  No price means the flower may not be sold. The block is replaced
+                  rather than the number hidden, so there is nothing to add to a
+                  cart and nothing for a customer to misread as an offer.
+                -->
+                <div class="flower-pricing unavailable" th:unless="${flower.price != null}">
+                    <p class="flower-price">Sin precio de venta</p>
+                    <p class="flower-unavailable-note">
+                        Esta especie no esta a la venta en este momento. Puede escribirle a
+                        Florabelle y ella le sugiere alternativas disponibles.
+                    </p>
+                </div>
+
+                <div class="flower-actions">
+                    <button class="btn-primary" type="button"
+                            data-action="add-to-cart"
+                            th:data-species-key="${flower.speciesKey}"
+                            th:data-name="${flower.commonName}"
+                            th:disabled="${flower.price == null}"
+                            th:aria-label="'Agregar ' + ${flower.commonName} + ' al carrito'">
+                        Agregar al carrito
+                    </button>
+                    <button class="btn-secondary" type="button" data-action="open-chat"
+                            th:data-flower="${flower.commonName}">
+                        Cotizar con Florabelle
+                    </button>
+                </div>
+
+                <dl class="flower-facts">
+                    <div th:if="${flower.originCountry != null}">
+                        <dt>Origen</dt>
+                        <dd th:text="${flower.originCountry}">China</dd>
+                    </div>
+                    <div th:if="${flower.scientificName != null}">
+                        <dt>Nombre cientifico</dt>
+                        <dd class="latin" th:text="${flower.scientificName}">Rosa spp.</dd>
+                    </div>
+                    <div>
+                        <dt>Codigo</dt>
+                        <dd th:text="${flower.speciesKey}">rose</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="flower-about" th:if="${flower.description != null}">
+            <div class="section-heading">
+                <h2>Sobre esta flor</h2>
+            </div>
+            <p th:text="${flower.description}">Descripcion botanica de la especie.</p>
+        </section>
+
+        <section class="flower-care">
+            <div class="section-heading">
+                <h2>Cuidados</h2>
+            </div>
+            <!--
+              The same care advice the manual gives in its FAQ, so the page and
+              Florabelle say the same thing.
+            -->
+            <ul class="info-ticks">
+                <li>Recorte 1 a 2 cm del tallo en diagonal con un cuchillo limpio.</li>
+                <li>Retire las hojas que queden bajo el agua.</li>
+                <li>Use agua limpia y fresca con el sobre de nutrientes que incluimos.</li>
+                <li>Cambie el agua cada 2 dias y evite la luz solar directa.</li>
+            </ul>
+        </section>
+
+        <section class="catalog-section" th:if="${!related.isEmpty()}">
+            <div class="catalog-heading">
+                <h2>Tambien le puede gustar</h2>
+            </div>
+            <div class="catalog-grid">
+                <th:block th:each="other : ${related}">
+                    <div th:replace="~{fragments/product-card :: card(${other})}"></div>
+                </th:block>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

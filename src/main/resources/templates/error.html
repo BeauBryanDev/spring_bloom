@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${status != null ? 'Error ' + status + ' - Spring-Bloom' : 'Error - Spring-Bloom'}">
+        Error - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="noindex"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<!--
+  Spring Boot resolves this one template for every status it handles, so it must
+  render with nothing but what BasicErrorController puts in the model: status,
+  error, message, path, timestamp. It never depends on a model any controller of
+  this application built, which is also why the footer reads the contact details
+  from a bean rather than from a model attribute.
+
+  message is present because server.error.include-message is 'always', and the
+  stack trace is not because include-stacktrace is 'never'. Nothing here prints
+  the exception: an internal type is not something to show a customer.
+-->
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <section class="error-page">
+
+            <p class="error-code" th:text="${status} ?: 'Error'">404</p>
+
+            <h1 th:switch="${status != null ? status.toString() : ''}">
+                <span th:case="'404'">No encontramos esa pagina</span>
+                <span th:case="'403'">Esta pagina es privada</span>
+                <span th:case="'401'">Necesita iniciar sesion</span>
+                <span th:case="'400'">La solicitud no se entendio</span>
+                <span th:case="'405'">Esa accion no esta permitida aqui</span>
+                <span th:case="'413'">El archivo es demasiado grande</span>
+                <span th:case="'500'">Algo se nos rompio</span>
+                <span th:case="'503'">Estamos en mantenimiento</span>
+                <span th:case="*">Algo no salio bien</span>
+            </h1>
+
+            <p class="error-message" th:switch="${status != null ? status.toString() : ''}">
+                <span th:case="'404'">
+                    El enlace puede estar viejo o la flor que busca ya no esta en el
+                    catalogo. Desde el catalogo puede ver todo lo que tenemos hoy.
+                </span>
+                <span th:case="'403'">
+                    Esta seccion es del equipo de Spring-Bloom. Si llego aqui por error,
+                    vuelva al inicio.
+                </span>
+                <span th:case="'401'">
+                    Esta seccion pide credenciales del equipo de Spring-Bloom.
+                </span>
+                <span th:case="'400'">
+                    Faltan datos o vienen en un formato que no reconocemos. Intente de
+                    nuevo, y si sigue igual, escribanos.
+                </span>
+                <span th:case="'405'">
+                    Esa direccion existe, pero no acepta este tipo de solicitud.
+                </span>
+                <span th:case="'413'">
+                    La foto pesa mas de lo que aceptamos. Envie una imagen mas liviana.
+                </span>
+                <span th:case="'503'">
+                    Estamos haciendo un ajuste y volvemos en unos minutos.
+                </span>
+                <span th:case="*">
+                    Fue un problema nuestro, no suyo. Ya quedo registrado y lo estamos
+                    revisando. Intente de nuevo en un momento.
+                </span>
+            </p>
+
+            <!-- The failed address, so a customer can quote it back to support. -->
+            <p class="error-path" th:if="${path != null}">
+                <span>Direccion:</span>
+                <code th:text="${path}">/flores/xxx</code>
+            </p>
+
+            <div class="hero-actions error-actions">
+                <a href="/" class="btn-primary">Volver al inicio</a>
+                <a href="/catalogo" class="btn-secondary">Ver el catalogo</a>
+                <a href="/contacto" class="btn-secondary">Contacto</a>
+            </div>
+
+            <p class="error-help">
+                Tambien puede preguntarle a Florabelle: ella busca en el inventario
+                real y le dice si tenemos lo que necesita.
+            </p>
+            <button class="btn-secondary" type="button" data-action="open-chat">
+                Abrir el chat
+            </button>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

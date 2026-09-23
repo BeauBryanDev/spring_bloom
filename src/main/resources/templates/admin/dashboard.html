@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Panel Admin - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f6f4f2; color: #222; margin: 0; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center;
+                        padding: 1rem 2rem; background: #1c1c1e; color: #fff; }
+        .admin-header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        .admin-header a.active { color: #fff; font-weight: 700; }
+        main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+        h1 { margin-top: 0; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .card { background: white; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .card .label { font-size: 0.8rem; color: #777; text-transform: uppercase; }
+        .card .value { font-size: 1.6rem; font-weight: 700; margin-top: 0.25rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; margin-bottom: 2rem; }
+        th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: #efeae6; font-size: 0.8rem; text-transform: uppercase; color: #666; }
+        .badge { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .badge.low { background: #fde3e3; color: #a11; }
+        .badge.import { background: #e3edfd; color: #1a4; }
+        section h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .empty { color: #999; font-style: italic; padding: 1rem; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-nav :: nav('dashboard')}"></div>
+
+<main>
+    <h1>Resumen de ventas</h1>
+
+    <div class="cards">
+        <div class="card">
+            <div class="label">Total cotizado</div>
+            <div class="value" th:text="'$' + ${totalQuotedFormatted} + ' COP'">$0 COP</div>
+        </div>
+        <div class="card" th:each="entry : ${summary.quotationsByStatus()}">
+            <div class="label" th:text="${entry.key}">STATUS</div>
+            <div class="value" th:text="${entry.value}">0</div>
+        </div>
+    </div>
+
+    <section>
+        <h2>Ultimas cotizaciones</h2>
+        <table th:if="${not #lists.isEmpty(summary.recentQuotations())}">
+            <thead>
+                <tr><th>Numero</th><th>Estado</th><th>Total</th><th>Fecha</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="q : ${summary.recentQuotations()}">
+                    <td th:text="${q.quotationNumber()}">COT-</td>
+                    <td th:text="${q.status()}">DRAFT</td>
+                    <td th:text="'$' + ${#numbers.formatDecimal(q.totalAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
+                    <td th:text="${#temporals.format(q.createdAt(), 'dd/MM/yyyy HH:mm')}">-</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="empty" th:if="${#lists.isEmpty(summary.recentQuotations())}">No hay cotizaciones todavia.</p>
+    </section>
+
+    <section>
+        <h2>Stock bajo <span class="badge low">IN_STOCK &lt; 10</span></h2>
+        <table th:if="${not #lists.isEmpty(summary.lowStock())}">
+            <thead><tr><th>Especie</th><th>Clave</th><th>Cantidad</th></tr></thead>
+            <tbody>
+                <tr th:each="a : ${summary.lowStock()}">
+                    <td th:text="${a.commonName()}">-</td>
+                    <td th:text="${a.speciesKey()}">-</td>
+                    <td th:text="${a.quantity()}">0</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="empty" th:if="${#lists.isEmpty(summary.lowStock())}">Nada en stock bajo.</p>
+    </section>
+
+    <section>
+        <h2>Importacion bajo pedido <span class="badge import">IMPORT_ON_REQUEST</span></h2>
+        <table th:if="${not #lists.isEmpty(summary.importOnRequest())}">
+            <thead><tr><th>Especie</th><th>Clave</th></tr></thead>
+            <tbody>
+                <tr th:each="a : ${summary.importOnRequest()}">
+                    <td th:text="${a.commonName()}">-</td>
+                    <td th:text="${a.speciesKey()}">-</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="empty" th:if="${#lists.isEmpty(summary.importOnRequest())}">Nada en esta categoria.</p>
+    </section>
+</main>
+</body>
+</html>

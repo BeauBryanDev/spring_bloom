@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="chat-panel" class="chat-panel">
+    <div class="chat-header">
+        <div class="chat-title">
+            <img th:src="@{/assets/icons/florabelle.svg}" alt="Florabelle"/>
+            <div>
+                <div class="chat-name">Florabelle</div>
+                <div class="chat-tagline">Tu asistente de flores con IA</div>
+            </div>
+        </div>
+        <button class="chat-close-btn" data-action="close-chat" type="button" aria-label="Cerrar chat">
+            &times;
+        </button>
+    </div>
+
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
+        <div class="chat-row agent" data-greeting>
+            <img class="chat-avatar" th:src="@{/assets/icons/florabelle.svg}" alt=""/>
+            <div class="chat-bubble agent">
+                Hola, soy Florabelle. Puedo ayudarte a encontrar las flores
+                perfectas para tu negocio y a preparar una cotizacion.
+                En que te puedo ayudar hoy?
+            </div>
+        </div>
+    </div>
+
+    <!--
+      Shown only while a file is being dragged over the panel. It covers the
+      whole panel rather than the input row: a customer aims at Florabelle, not
+      at a 40px target.
+    -->
+    <div class="chat-dropzone" id="chat-dropzone" hidden>
+        <img th:src="@{/assets/icons/pretty_flower.svg}" alt=""/>
+        <p>Suelta la foto aqui y Florabelle la mira</p>
+        <span>JPG, PNG o WebP</span>
+    </div>
+
+    <p class="chat-error" id="chat-error" hidden></p>
+
+    <!-- The pending attachment, with a thumbnail, so nothing is sent unseen. -->
+    <div class="chat-attachment" id="chat-attachment" hidden>
+        <img class="chat-attachment-thumb" id="chat-attachment-thumb" alt=""/>
+        <div class="chat-attachment-meta">
+            <span class="chat-attachment-name" id="chat-attachment-name"></span>
+            <span class="chat-attachment-size" id="chat-attachment-size"></span>
+        </div>
+        <button class="chat-attachment-remove" id="chat-attachment-remove" type="button"
+                aria-label="Quitar la foto">&times;</button>
+    </div>
+
+    <form class="chat-input-area" id="chat-form">
+        <input type="file" id="chat-file-input" accept="image/jpeg,image/png,image/webp" hidden/>
+        <button class="chat-attach-btn" id="chat-attach-btn" type="button"
+                aria-label="Adjuntar una foto">
+            <img th:src="@{/assets/icons/flower_icon.svg}" alt=""/>
+        </button>
+        <input type="text" id="chat-text-input" autocomplete="off" maxlength="2000"
+               placeholder="Escribe tu mensaje..."/>
+        <button class="chat-send-btn" id="chat-send-btn" type="submit" aria-label="Enviar mensaje">
+            <img th:src="@{/assets/icons/send_icon.svg}" alt=""/>
+        </button>
+    </form>
+</aside>
+
+</body>
+</html>

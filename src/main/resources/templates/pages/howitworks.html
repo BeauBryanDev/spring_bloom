@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Como Funciona - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('como-funciona')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <section class="page-intro info-intro">
+            <h1>Como Funciona</h1>
+            <p>
+                Del catalogo a la entrega: como se cotiza, se confirma, se despacha
+                y se responde por cada pedido.
+            </p>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>El proceso, paso a paso</h2>
+            </div>
+            <ol class="info-steps">
+                <li class="info-step" th:each="step, iter : ${steps}">
+                    <span class="info-step-number" th:text="${iter.count}">1</span>
+                    <div class="info-step-body">
+                        <h3 th:text="${step.title}">Paso</h3>
+                        <p th:text="${step.description}">Descripcion</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Estados de disponibilidad</h2>
+            </div>
+            <p class="info-lead">
+                El inventario se actualiza en tiempo real. Cada flor del catalogo
+                lleva uno de estos cuatro estados, y significan exactamente esto.
+            </p>
+            <div class="info-status-grid">
+                <article class="info-status" th:each="status : ${availability}">
+                    <span class="availability-badge" th:text="${status.code}">IN_STOCK</span>
+                    <h3 th:text="${status.label}">Etiqueta</h3>
+                    <p th:text="${status.description}">Descripcion</p>
+                </article>
+            </div>
+            <p class="info-note">
+                Florabelle nunca promete disponibilidad de un producto marcado
+                <code>NOT_FOR_SALE</code> ni de uno cuyo stock figure en ceros sin
+                reabastecimiento confirmado. Si la flor esta fuera de temporada, se
+                lo dice y le sugiere alternativas equivalentes que si esten en stock.
+            </p>
+        </section>
+
+        <section class="info-section info-split">
+            <article class="info-panel">
+                <h2>Precios y cotizaciones</h2>
+                <ul class="info-ticks">
+                    <li>
+                        Todos los precios se expresan en pesos colombianos (COP),
+                        con formato claro: $45.000 COP, $180.000 COP.
+                    </li>
+                    <li>
+                        Los precios de tallos individuales, ramos, guirnaldas y
+                        diseno floral son fijos y publicos en el catalogo digital.
+                    </li>
+                    <li>
+                        Una cotizacion mayorista se calcula por volumen de tallos,
+                        complejidad del diseno y estacionalidad, y tiene una
+                        <strong>validez estricta de 5 dias calendario</strong>,
+                        porque los mercados florales fluctuan.
+                    </li>
+                    <li>
+                        Ningun pedido se procesa sin la aceptacion formal previa de
+                        la cotizacion por parte del cliente.
+                    </li>
+                    <li>
+                        Florabelle tiene prohibido inventar, estimar o adivinar un
+                        precio. Si su caso excede el catalogo estandar, deriva la
+                        consulta al equipo comercial humano.
+                    </li>
+                </ul>
+            </article>
+            <article class="info-panel">
+                <h2>Entrega y ultima milla</h2>
+                <ul class="info-ticks">
+                    <li>
+                        Cobertura urbana y suburbana en las principales ciudades del
+                        pais. Fuera de esas zonas, el envio se cotiza aparte.
+                    </li>
+                    <li>
+                        Despacho en bloques horarios definidos: manana de 8:00 a.m.
+                        a 12:00 m, tarde de 2:00 p.m. a 6:00 p.m.
+                    </li>
+                    <li>
+                        Vehiculos con climatizacion o contenedores isotermicos
+                        rigidos, que protegen el arreglo del sol directo, las
+                        corrientes de aire y las vibraciones.
+                    </li>
+                    <li>
+                        Es responsabilidad del cliente que haya alguien para recibir
+                        dentro de la ventana acordada.
+                    </li>
+                    <li>
+                        Si tras 10 minutos de espera y llamadas nadie responde, el
+                        pedido vuelve a bodega; un segundo intento tiene un cargo
+                        adicional de reenvio.
+                    </li>
+                    <li>
+                        Cada entrega se registra con fotografia del arreglo en el
+                        punto de recepcion y firma de quien recibe.
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Cambios y cancelaciones</h2>
+            </div>
+            <div class="info-columns info-columns-2">
+                <article class="info-card">
+                    <h3>Antes de la preparacion</h3>
+                    <p>
+                        Puede cambiar direccion, dedicatoria o composicion hasta
+                        <strong>3 horas antes</strong> de que el pedido entre en
+                        preparacion. Cancelar antes de que el arreglo pase a diseno
+                        floral tiene reembolso del 100%.
+                    </p>
+                </article>
+                <article class="info-card">
+                    <h3>Despues de la preparacion</h3>
+                    <p>
+                        Si el arreglo ya fue elaborado no se acepta cancelacion
+                        total, por la naturaleza perecedera del producto. Puede
+                        aplicar un reembolso parcial, excluyendo la mano de obra de
+                        floristeria.
+                    </p>
+                </article>
+                <article class="info-card">
+                    <h3>Flores importadas</h3>
+                    <p>
+                        Un pedido con flores importadas bajo solicitud no admite
+                        cancelacion ni reembolso una vez el proveedor internacional
+                        confirma el despacho del material vegetal.
+                    </p>
+                </article>
+                <article class="info-card">
+                    <h3>Si se agota el inventario</h3>
+                    <p>
+                        Si hay una ruptura de stock imprevista despues de su orden,
+                        lo contactamos de inmediato para ofrecerle una sustitucion
+                        de igual o superior valor, o el reembolso inmediato.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Si algo llega en mal estado</h2>
+            </div>
+            <p class="info-lead">
+                Garantizamos la frescura de nuestras flores. Si lo que recibe no
+                cumple el estandar, esto es lo que ocurre.
+            </p>
+            <ol class="info-steps">
+                <li class="info-step">
+                    <span class="info-step-number">1</span>
+                    <div class="info-step-body">
+                        <h3>Reporte dentro de 24 horas</h3>
+                        <p>
+                            Tiene un plazo maximo de 24 horas desde que recibe el
+                            pedido para reportar cualquier dano o marchitamiento
+                            prematuro, por los canales de atencion o con Florabelle.
+                        </p>
+                    </div>
+                </li>
+                <li class="info-step">
+                    <span class="info-step-number">2</span>
+                    <div class="info-step-body">
+                        <h3>Adjunte fotografias</h3>
+                        <p>
+                            Es obligatorio adjuntar fotos claras del arreglo o de las
+                            flores recibidas, mostrando el dano y el estado del
+                            empaque original.
+                        </p>
+                    </div>
+                </li>
+                <li class="info-step">
+                    <span class="info-step-number">3</span>
+                    <div class="info-step-body">
+                        <h3>Revision en 24 horas habiles</h3>
+                        <p>
+                            El equipo de control de calidad evalua la evidencia en un
+                            plazo no mayor a 24 horas habiles.
+                        </p>
+                    </div>
+                </li>
+                <li class="info-step">
+                    <span class="info-step-number">4</span>
+                    <div class="info-step-body">
+                        <h3>Resolucion</h3>
+                        <p>
+                            Reemplazo total o parcial sin costo de envio adicional,
+                            reembolso al medio de pago original, o nota credito con
+                            un porcentaje adicional de cortesia.
+                        </p>
+                    </div>
+                </li>
+            </ol>
+            <p class="info-note">
+                No se aceptan reclamaciones por danos de manipulacion posterior
+                (falta de agua, calor directo, corrientes de aire acondicionado
+                continuas) ni reportes fuera de la ventana de 24 horas.
+            </p>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Florabelle, nuestra asistente</h2>
+            </div>
+            <p class="info-lead">
+                Florabelle atiende el chat de esta tienda. Trabaja con reglas
+                estrictas, y las publicamos porque usted merece saber que puede y
+                que no puede hacer por usted.
+            </p>
+            <div class="info-columns info-columns-2">
+                <article class="info-card info-card-can">
+                    <h3>Lo que hace sola</h3>
+                    <ul>
+                        <li>Explicar el catalogo, las caracteristicas de cada flor y sus cuidados.</li>
+                        <li>Consultar el inventario real en tiempo real.</li>
+                        <li>Recomendar arreglos segun la ocasion que usted describa.</li>
+                        <li>Analizar la foto de una flor que usted le envie.</li>
+                        <li>Generar cotizaciones sobre la lista de precios oficial vigente.</li>
+                        <li>Explicar entregas, tiempos, cobertura y politicas de reembolso.</li>
+                        <li>Registrar un reclamo por un pedido que ya ocurrio.</li>
+                    </ul>
+                </article>
+                <article class="info-card info-card-cannot">
+                    <h3>Lo que nunca hace</h3>
+                    <ul>
+                        <li>Inventar niveles de inventario.</li>
+                        <li>Inventar, estimar o modificar precios fuera del tarifario oficial.</li>
+                        <li>Confirmar que un pedido fue despachado o entregado sin el sistema logistico.</li>
+                        <li>Crear o confirmar una compra sin su aprobacion clara y consciente.</li>
+                        <li>Aprobar un reembolso por su cuenta: lo registra y lo escala al equipo humano.</li>
+                        <li>Modificar las politicas de Spring-Bloom ni prometer nada fuera de ellas.</li>
+                    </ul>
+                </article>
+            </div>
+            <p class="info-note">
+                Toda disputa grave por reembolsos, dano generalizado en un evento
+                corporativo o falla repetida de entrega se escala de inmediato a un
+                supervisor humano de servicio al cliente.
+            </p>
+        </section>
+
+        <section class="info-section info-closing">
+            <h2>Listo para empezar?</h2>
+            <p>
+                Explore el catalogo y pregunte lo que necesite. Florabelle responde
+                con el inventario y los precios reales de la tienda.
+            </p>
+            <div class="hero-actions">
+                <a href="/catalogo" class="btn-primary">Explorar Catalogo</a>
+                <a href="/sobre-nosotros" class="btn-secondary">Sobre Nosotros</a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

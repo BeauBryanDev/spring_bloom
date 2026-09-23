@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Pedidos - Panel Admin - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f6f4f2; color: #222; margin: 0; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center;
+                        padding: 1rem 2rem; background: #1c1c1e; color: #fff; }
+        .admin-header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        .admin-header a.active { color: #fff; font-weight: 700; }
+        main { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+        h1 { margin-top: 0; }
+        .notice { background: #fff4e0; color: #8a5a00; padding: 0.75rem 1rem; border-radius: 8px;
+                   font-size: 0.85rem; margin-bottom: 1.25rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: #efeae6; font-size: 0.8rem; text-transform: uppercase; color: #666; }
+        .empty { color: #999; font-style: italic; padding: 1rem; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-nav :: nav('orders')}"></div>
+
+<main>
+    <h1>Pedidos</h1>
+    <p class="notice">
+        Vista de solo lectura. El modulo de pedidos (confirmacion, descuento de stock,
+        cambio de estado) todavia no esta construido - esto solo muestra lo que ya
+        existe en flower_order.
+    </p>
+
+    <table th:if="${not #lists.isEmpty(orders)}">
+        <thead>
+            <tr><th>Numero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Fecha</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="o : ${orders}">
+                <td th:text="${o.orderNumber()}">ORD-</td>
+                <td th:text="${o.customerName()}">-</td>
+                <td th:text="${o.status()}">PENDING</td>
+                <td th:text="'$' + ${#numbers.formatDecimal(o.totalAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
+                <td th:text="${#temporals.format(o.createdAt(), 'dd/MM/yyyy HH:mm')}">-</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty" th:if="${#lists.isEmpty(orders)}">No hay pedidos todavia.</p>
+</main>
+</body>
+</html>

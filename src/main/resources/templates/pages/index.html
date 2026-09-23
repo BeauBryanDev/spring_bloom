@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Spring-Bloom - Flores de Exportacion al Por Mayor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('inicio')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Flores al por mayor.<br/>Calidad de exportacion.</h1>
+                <p>
+                    Suministramos flores frescas, ramos y guirnaldas
+                    personalizadas para negocios, eventos y comercio de
+                    exportacion, con precision garantizada por Florabelle,
+                    nuestro agente de identificacion y cotizacion.
+                </p>
+                <div class="hero-actions">
+                    <a href="/catalogo" class="btn-primary">Explorar Catalogo</a>
+                    <a href="/como-funciona" class="btn-secondary">Como Funciona</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img th:src="@{/assets/hero_bouquet.jpg}" alt="Ramo destacado Spring-Bloom"/>
+            </div>
+        </section>
+
+        <section class="benefits">
+            <div class="benefit-item">
+                <img th:src="@{/assets/icons/flower_icon.svg}" alt="flower icon"/>
+                <div>
+                    <h3>Fresco y Premium</h3>
+                    <p>Flores seleccionadas de cultivadores de confianza.</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <img th:src="@{/assets/icons/basket_icon.svg}" alt="basket icon"/>
+                <div>
+                    <h3>Creaciones a Medida</h3>
+                    <p>Ramos y guirnaldas disenadas para tu negocio.</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <img th:src="@{/assets/icons/delivery_icon.svg}" alt="delivery icon"/>
+                <div>
+                    <h3>Entrega Confiable</h3>
+                    <p>Despacho puntual, siempre.</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <img th:src="@{/assets/icons/pretty_flower.svg}" alt="flower icon"/>
+                <div>
+                    <h3>Calidad Verificada</h3>
+                    <p>Control de calidad en cada etapa.</p>
+                </div>
+            </div>
+        </section>
+
+        <!--
+          Catalog section. This is the commercial centerpiece of the page,
+          so it gets a full grid, not a small preview strip.
+
+          Controller contract expected here:
+            model.addAttribute("flowers", catalogQueryPort.listFeatured());
+
+          Each item in "flowers" needs, at minimum:
+            - commonName        (String)
+            - scientificName    (String)
+            - imagePath          (String, relative to /assets/images/flowers/)
+            - availability       (enum: IN_STOCK / INCOMING_RESTOCK / IMPORT_ON_REQUEST)
+            - availabilityLabel  (String, Spanish label for display)
+            - price              (BigDecimal or String, already formatted as COP)
+
+          NOT_FOR_SALE species must never be included in this list; filter
+          them out in the query port, not in the template.
+        -->
+        <section class="catalog-section">
+            <div class="catalog-heading">
+                <h2>Nuestro Catalogo</h2>
+                <a href="/catalogo" class="btn-secondary">Ver Todo</a>
+            </div>
+            <p class="catalog-subtitle">
+                Mas de 90 especies identificadas por Florabelle, clasificadas
+                por disponibilidad real.
+            </p>
+
+            <div class="catalog-filters">
+                <span class="filter-pill active">Todas</span>
+                <span class="filter-pill">Disponible Ahora</span>
+                <span class="filter-pill">Proximo Restock</span>
+                <span class="filter-pill">Bajo Pedido (Importacion)</span>
+            </div>
+
+            <div class="catalog-grid">
+                <th:block th:each="flower : ${flowers}">
+                    <div th:replace="~{fragments/product-card :: card(${flower})}"></div>
+                </th:block>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

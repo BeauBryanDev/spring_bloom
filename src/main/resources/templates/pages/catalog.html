@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Catalogo de Flores - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('catalogo')}"></header>
+
+    <main class="main-content">
+
+        <section class="page-intro">
+            <h1>Catalogo de Flores</h1>
+            <p>Variedades premium seleccionadas para tu negocio.</p>
+        </section>
+
+        <section class="catalog-section">
+
+            <!--
+              The filters live in the URL, so a narrowed shelf can be linked and
+              reloaded. The pills are links; the dropdowns submit the same GET
+              form, and each control carries the other two choices along so
+              picking one never silently discards the others.
+            -->
+            <div class="catalog-toolbar">
+                <div class="catalog-filters">
+                    <a th:each="option : ${availabilities}"
+                       class="filter-pill"
+                       th:classappend="${option.name() == selectedAvailability} ? 'active'"
+                       th:href="@{/catalogo(disponibilidad=${option.name()},
+                                            precio=${selectedPriceBand},
+                                            orden=${selectedSort})}"
+                       th:text="${option.label}">Todos</a>
+                </div>
+
+                <form class="catalog-sorts" method="get" action="/catalogo" data-auto-submit>
+                    <input type="hidden" name="disponibilidad" th:value="${selectedAvailability}"/>
+
+                    <label class="field">
+                        <span>Precio</span>
+                        <select name="precio">
+                            <option th:each="band : ${priceBands}"
+                                    th:value="${band.name()}"
+                                    th:selected="${band.name() == selectedPriceBand}"
+                                    th:text="${band.label}">Todos los precios</option>
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span>Ordenar por</span>
+                        <select name="orden">
+                            <option th:each="order : ${sortOrders}"
+                                    th:value="${order.name()}"
+                                    th:selected="${order.name() == selectedSort}"
+                                    th:text="${order.label}">Nombre A-Z</option>
+                        </select>
+                    </label>
+
+                    <!-- Without JavaScript the form still works; this is the fallback. -->
+                    <noscript><button class="btn-secondary" type="submit">Aplicar</button></noscript>
+                </form>
+            </div>
+
+            <p class="catalog-count">
+                <span th:text="${#lists.size(flowers)}">90</span> especies
+            </p>
+
+            <p class="catalog-empty" th:if="${#lists.isEmpty(flowers)}">
+                Ninguna especie coincide con estos filtros.
+            </p>
+
+            <div class="catalog-grid">
+                <th:block th:each="flower : ${flowers}">
+                    <div th:replace="~{fragments/product-card :: card(${flower})}"></div>
+                </th:block>
+            </div>
+        </section>
+
+        <section class="creations-section">
+            <div class="catalog-heading">
+                <h2>Garlands y Flower Crowns</h2>
+            </div>
+            <p class="catalog-subtitle">
+                Disenos listos para eventos, bodas y decoracion premium.
+            </p>
+
+            <div class="creations-columns">
+                <div class="creations-group">
+                    <h3 class="creations-group-title">Garlands</h3>
+                    <div class="creations-grid">
+                        <th:block th:each="creation : ${garlands}">
+                            <div th:replace="~{fragments/creation-card :: card(${creation})}"></div>
+                        </th:block>
+                    </div>
+                </div>
+
+                <div class="creations-group">
+                    <h3 class="creations-group-title">Flower Crowns (Coronas grandes)</h3>
+                    <div class="creations-grid">
+                        <th:block th:each="creation : ${crowns}">
+                            <div th:replace="~{fragments/creation-card :: card(${creation})}"></div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+<script th:src="@{/assets/js/catalog.js}"></script>
+</body>
+</html>

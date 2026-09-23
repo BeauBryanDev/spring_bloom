@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Contacto - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('contacto')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <section class="page-intro info-intro">
+            <h1>Contacto</h1>
+            <p>
+                Escribanos por el canal que mejor le sirva. Florabelle responde al
+                instante; el equipo humano toma los casos que ella no puede resolver.
+            </p>
+        </section>
+
+        <section class="info-section">
+            <div class="info-columns">
+                <article class="info-card contact-card">
+                    <h3>Chat con Florabelle</h3>
+                    <p>
+                        Consulta de disponibilidad, precios reales, cotizaciones y
+                        registro de reclamos. Responde de inmediato, todos los dias.
+                    </p>
+                    <button class="btn-primary" type="button" data-action="open-chat">
+                        Abrir el chat
+                    </button>
+                </article>
+
+                <article class="info-card contact-card">
+                    <h3>Correo</h3>
+                    <p>Para solicitudes con documentos adjuntos o seguimiento por escrito.</p>
+                    <p class="contact-value">
+                        <a th:href="'mailto:' + ${@contactDetails.email}" th:text="${@contactDetails.email}">correo</a>
+                    </p>
+                    <p class="contact-note">Mayoristas y eventos:
+                        <a th:href="'mailto:' + ${@contactDetails.wholesaleEmail}" th:text="${@contactDetails.wholesaleEmail}">correo</a>
+                    </p>
+                </article>
+
+                <article class="info-card contact-card">
+                    <h3>Telefono</h3>
+                    <p>Para urgencias de un pedido en curso o coordinacion de entrega.</p>
+                    <p class="contact-value" th:text="${@contactDetails.phone}">telefono</p>
+                    <p class="contact-note" th:text="${@contactDetails.hours}">horario</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Que puede resolver cada canal</h2>
+            </div>
+            <p class="info-lead">
+                Florabelle trabaja con el inventario y los precios reales de la tienda.
+                Hay cosas que decide la tienda, no ella, y las pasa al equipo humano.
+            </p>
+            <div class="info-columns info-columns-2">
+                <article class="info-card info-card-can">
+                    <h3>Florabelle, ahora mismo</h3>
+                    <ul>
+                        <li>Que flores hay y a que precio, por tallo.</li>
+                        <li>Cotizaciones reales con numero COT-, validas por 5 dias.</li>
+                        <li>Identificar una flor a partir de una foto suya.</li>
+                        <li>Recomendaciones segun la ocasion.</li>
+                        <li>Politicas de entrega, reembolso, cancelacion e importacion.</li>
+                        <li>Registrar un reclamo y darle su numero REC-.</li>
+                    </ul>
+                </article>
+                <article class="info-card info-card-cannot">
+                    <h3>El equipo humano</h3>
+                    <ul>
+                        <li>Aprobar un reembolso o una reposicion.</li>
+                        <li>Confirmar el estado o el despacho de un pedido.</li>
+                        <li>Confirmar cobertura en una direccion puntual.</li>
+                        <li>Cotizaciones fuera de los parametros del catalogo.</li>
+                        <li>Disputas graves y pedidos corporativos de gran volumen.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div class="section-heading">
+                <h2>Si su pedido llego en mal estado</h2>
+            </div>
+            <p class="info-lead">
+                Tiene <strong>24 horas</strong> desde que recibe el pedido para
+                reportarlo, con fotografias claras del dano y del empaque original.
+                Registrelo con Florabelle y ella le entrega el numero de su caso.
+            </p>
+            <p class="info-note">
+                Registrar un reclamo no aprueba por si solo un reembolso ni una
+                reposicion: el equipo de control de calidad evalua la evidencia en un
+                plazo no mayor a 24 horas habiles y le comunica la decision. Los
+                detalles estan en <a href="/como-funciona">Como Funciona</a>.
+            </p>
+        </section>
+
+        <section class="info-section info-split">
+            <article class="info-panel">
+                <h2>Canal mayorista</h2>
+                <p class="info-lead">
+                    Floristerias, decoradores, hoteles y organizadores de eventos
+                    tienen tarifas preferenciales y suministro recurrente.
+                </p>
+                <ul class="info-ticks">
+                    <li>Cotizaciones por volumen de tallos y complejidad del diseno.</li>
+                    <li>Suministro periodico para oficinas, hoteles y restaurantes.</li>
+                    <li>Flores importadas bajo pedido, con socios verificados.</li>
+                </ul>
+                <p class="contact-value">
+                    <a th:href="'mailto:' + ${@contactDetails.wholesaleEmail}" th:text="${@contactDetails.wholesaleEmail}">correo</a>
+                </p>
+            </article>
+            <article class="info-panel">
+                <h2>Cobertura</h2>
+                <p class="info-lead">
+                    Cobertura urbana y suburbana en las principales ciudades del pais.
+                    Fuera de esas zonas el envio se cotiza aparte.
+                </p>
+                <div class="info-cities">
+                    <span>Bogota</span>
+                    <span>Medellin</span>
+                    <span>Cali</span>
+                    <span>Barranquilla</span>
+                    <span>Cartagena</span>
+                    <span>Bucaramanga</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="info-section info-closing">
+            <h2>Prefiere empezar por las flores?</h2>
+            <p>
+                Mire el catalogo y pregunte por lo que le llame la atencion. Los
+                precios y la disponibilidad que ve son los reales de la bodega.
+            </p>
+            <div class="hero-actions">
+                <a href="/catalogo" class="btn-primary">Explorar Catalogo</a>
+                <a href="/como-funciona" class="btn-secondary">Como Funciona</a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="header(activePage)" class="site-header">
+    <a href="/" class="logo">
+        <img th:src="@{/assets/icons/main_logo.svg}" alt="Spring-Bloom"/>
+        <div>
+            <div class="logo-text">Spring-Bloom</div>
+            <div class="logo-subtitle">Mayorista de flores premium</div>
+        </div>
+    </a>
+
+    <span class="header-bloom-wrap">
+        <img class="header-bloom" th:src="@{/assets/marigold.png}" alt=""/>
+        <a class="admin-link" href="/admin" title="Panel Admin" aria-label="Panel Admin">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1zm2 0h8V8a4 4 0 1 0-8 0v2z"/>
+            </svg>
+        </a>
+    </span>
+
+    <ul class="main-nav">
+        <li><a href="/" th:classappend="${activePage == 'inicio'} ? 'active'">Inicio</a></li>
+        <li><a href="/catalogo" th:classappend="${activePage == 'catalogo'} ? 'active'">Catalogo</a></li>
+        <li><a href="/sobre-nosotros" th:classappend="${activePage == 'sobre-nosotros'} ? 'active'">Sobre Nosotros</a></li>
+        <li><a href="/como-funciona" th:classappend="${activePage == 'como-funciona'} ? 'active'">Como Funciona</a></li>
+        <li><a href="/contacto" th:classappend="${activePage == 'contacto'} ? 'active'">Contacto</a></li>
+    </ul>
+
+    <div class="header-actions">
+        <button class="btn-talk-florabelle" data-action="open-chat" type="button">
+            <img th:src="@{/assets/icons/chat_icon.svg}" alt=""/>
+            Hablar con Florabelle
+        </button>
+        <a class="btn-cart" href="/carrito" aria-label="Ver carrito">
+            <img th:src="@{/assets/icons/cart_icon.svg}" alt=""/>
+            <span class="cart-badge" id="cart-count">0</span>
+        </a>
+    </div>
+</header>
+
+</body>
+</html>

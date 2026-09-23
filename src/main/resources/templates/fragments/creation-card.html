@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  A garland or a flower crown: a composed creation, not a species. These are
+  presentation-only for now - a crown is not a product_type in the database yet,
+  so nothing here is priced by the pricing strategies or quotable by Florabelle.
+-->
+<article th:fragment="card(creation)" class="creation-card">
+    <div class="creation-image">
+        <img th:src="@{'/assets/creations/' + ${creation.imagePath}}"
+             th:alt="${creation.name}"/>
+    </div>
+    <div class="creation-body">
+        <h4 th:text="${creation.name}">Garland Clasico</h4>
+        <p class="creation-composition" th:text="${creation.composition}">Mix de verdes y flores</p>
+        <div class="creation-footer">
+            <span class="creation-price" th:text="${creation.price}">$165.000 COP</span>
+            <button class="btn-add-cart" type="button"
+                    data-action="add-to-cart"
+                    th:data-name="${creation.name}"
+                    th:aria-label="'Agregar ' + ${creation.name} + ' al carrito'">
+                <img th:src="@{/assets/icons/cart_icon.svg}" alt=""/>
+            </button>
+        </div>
+    </div>
+</article>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  One flower card, shared by the home preview grid and the catalog page. There
+  is deliberately one card and not two: the two pages show the same product and
+  a second copy would drift.
+
+  price is null exactly when the flower may not be sold, so the card has nothing
+  to price and the cart button is disabled - the same rule the domain enforces
+  in CatalogEntry.unitPrice().
+
+  The image and the name link to the product page; the cart button does not,
+  because a button inside a link is a broken control - it sits outside the
+  anchor and stops the click from bubbling.
+-->
+<article th:fragment="card(flower)" class="product-card">
+    <a class="product-image" th:href="@{'/flores/' + ${flower.speciesKey}}">
+        <img th:src="@{'/assets/flowers/' + ${flower.imagePath}}"
+             th:alt="${flower.commonName}"/>
+    </a>
+
+    <div class="product-body">
+        <a class="product-name" th:href="@{'/flores/' + ${flower.speciesKey}}">
+            <h3 th:text="${flower.commonName}">Rosa</h3>
+        </a>
+        <p class="scientific-name" th:text="${flower.scientificName}">Rosa spp.</p>
+
+        <p class="card-meaning" th:if="${flower.symbolicMeaning != null}"
+           th:text="${flower.symbolicMeaning}">Amor y pasion.</p>
+
+        <p class="card-description" th:if="${flower.description != null}"
+           th:text="${flower.description}">Descripcion botanica.</p>
+
+        <p class="product-price" th:if="${flower.price != null}">
+            <span th:text="${flower.price}">$2.500 COP</span>
+            <span class="price-unit">/tallo</span>
+        </p>
+        <p class="product-price unavailable" th:unless="${flower.price != null}">
+            Sin precio de venta
+        </p>
+
+        <p class="bundle-price" th:if="${flower.bouquetPrice != null}">
+            <span th:text="'Bouquet (' + ${flower.bouquetStems} + ')'">Bouquet (15)</span>
+            <span th:text="${flower.bouquetPrice}">$31.875 COP</span>
+        </p>
+
+        <div class="product-footer">
+            <span class="availability-badge"
+                  th:classappend="${flower.availability == 'IN_STOCK'} ? 'in-stock' : (${flower.availability == 'INCOMING_RESTOCK'} ? 'restock' : (${flower.availability == 'IMPORT_ON_REQUEST'} ? 'import' : 'not-for-sale'))"
+                  th:title="${flower.availabilityLabel}"
+                  th:text="${flower.availability == 'IN_STOCK'}
+                           ? ${flower.availability} + ' · ' + ${flower.quantity}
+                           : ${flower.availability}">IN_STOCK</span>
+
+            <!--
+              Nothing to check out with yet: Stripe is roadmap phase 5, so the
+              button only counts what the customer picked. It is disabled rather
+              than hidden on a flower that cannot be sold.
+            -->
+            <a class="card-detail-link" th:href="@{'/flores/' + ${flower.speciesKey}}">Ver ficha</a>
+
+            <button class="btn-add-cart" type="button"
+                    data-action="add-to-cart"
+                    th:data-species-key="${flower.speciesKey}"
+                    th:data-name="${flower.commonName}"
+                    th:disabled="${flower.price == null}"
+                    th:aria-label="'Agregar ' + ${flower.commonName} + ' al carrito'">
+                <img th:src="@{/assets/icons/cart_icon.svg}" alt=""/>
+            </button>
+        </div>
+    </div>
+</article>
+
+</body>
+</html>

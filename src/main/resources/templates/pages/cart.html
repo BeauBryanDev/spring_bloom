@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Carrito - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="noindex"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('carrito')}"></header>
+
+    <main class="main-content">
+
+        <img class="body-bloom" th:src="@{/assets/cartucho.png}" alt=""/>
+
+        <section class="page-intro info-intro">
+            <h1>Su carrito</h1>
+            <p>
+                Lo que ha seleccionado hasta ahora. Los precios son los reales de la
+                bodega y se consultan cada vez que abre esta pagina.
+            </p>
+        </section>
+
+        <!-- Empty is a state worth designing, not a blank page. -->
+        <section class="info-section cart-empty" th:if="${cart.empty}">
+            <h2>Todavia no ha agregado flores</h2>
+            <p>
+                Explore el catalogo y use el boton del carrito en cualquier flor
+                disponible. Tambien puede preguntarle a Florabelle que le recomienda
+                para la ocasion.
+            </p>
+            <div class="hero-actions">
+                <a href="/catalogo" class="btn-primary">Explorar Catalogo</a>
+                <button class="btn-secondary" type="button" data-action="open-chat">
+                    Preguntar a Florabelle
+                </button>
+            </div>
+        </section>
+
+        <section class="cart-layout" th:unless="${cart.empty}">
+
+            <div class="cart-lines">
+                <article class="cart-line" th:each="line : ${lines}"
+                         th:classappend="${!line.quotable} ? 'unavailable'">
+
+                    <a class="cart-line-image" th:href="@{'/flores/' + ${line.speciesKey}}">
+                        <img th:src="@{'/assets/flowers/' + ${line.imagePath}}"
+                             th:alt="${line.commonName}"/>
+                    </a>
+
+                    <div class="cart-line-body">
+                        <a class="cart-line-name" th:href="@{'/flores/' + ${line.speciesKey}}">
+                            <h3 th:text="${line.commonName}">Rosa</h3>
+                        </a>
+                        <p class="scientific-name" th:text="${line.scientificName}">Rosa spp.</p>
+
+                        <p class="cart-line-unit" th:if="${line.quotable}">
+                            <span th:text="${line.unitPrice}">$4.448 COP</span>
+                            <span class="price-unit">/tallo</span>
+                        </p>
+
+                        <p class="cart-line-warning" th:unless="${line.quotable}"
+                           th:text="'No disponible: ' + ${line.availabilityLabel}">
+                            No disponible
+                        </p>
+                        <p class="cart-line-warning"
+                           th:if="${line.quotable and !line.enoughStock}">
+                            Pedimos mas tallos de los que hay en bodega hoy. Florabelle le
+                            confirma la fecha antes de cerrar el pedido.
+                        </p>
+                    </div>
+
+                    <div class="cart-line-qty">
+                        <button type="button" class="qty-btn" data-action="cart-decrease"
+                                th:data-species-key="${line.speciesKey}"
+                                aria-label="Quitar un tallo">-</button>
+                        <span class="qty-value" th:text="${line.quantity}">5</span>
+                        <button type="button" class="qty-btn" data-action="cart-increase"
+                                th:data-species-key="${line.speciesKey}"
+                                aria-label="Agregar un tallo">+</button>
+                    </div>
+
+                    <div class="cart-line-total">
+                        <span th:if="${line.quotable}" th:text="${line.lineTotal}">$22.240 COP</span>
+                        <span th:unless="${line.quotable}" class="no-price">Sin precio</span>
+                        <button type="button" class="cart-remove" data-action="cart-remove"
+                                th:data-species-key="${line.speciesKey}"
+                                th:aria-label="'Quitar ' + ${line.commonName} + ' del carrito'">
+                            Quitar
+                        </button>
+                    </div>
+                </article>
+
+                <div class="cart-tools">
+                    <a href="/catalogo" class="cart-continue">Seguir comprando</a>
+                    <button type="button" class="cart-clear" data-action="cart-clear">
+                        Vaciar carrito
+                    </button>
+                </div>
+            </div>
+
+            <aside class="cart-summary">
+                <h2>Resumen</h2>
+
+                <dl class="cart-totals">
+                    <div>
+                        <dt th:text="${cart.sellableStems} + ' tallos'">15 tallos</dt>
+                        <dd th:text="${subtotal}">$100.810 COP</dd>
+                    </div>
+                    <div th:if="${cart.hasDiscount()}" class="cart-discount">
+                        <dt th:text="'Descuento por volumen (' + ${discountPercentage} + '%)'">
+                            Descuento por volumen (15%)
+                        </dt>
+                        <dd th:text="'- ' + ${discountAmount}">- $15.121 COP</dd>
+                    </div>
+                    <div class="cart-total-row">
+                        <dt>Total estimado</dt>
+                        <dd th:text="${total}">$85.688 COP</dd>
+                    </div>
+                </dl>
+
+                <!--
+                  This is an estimate of a bundle, not a document. Only
+                  RequestQuotationUseCase produces a COT- number, and the prompt
+                  forbids Florabelle from inventing a total, so the page must not
+                  imply this figure is a quotation.
+                -->
+                <p class="cart-note">
+                    Es un estimado con la tarifa vigente y el descuento por volumen que
+                    aplica la tienda. La cotizacion en firme, con numero y validez de 5
+                    dias, se la entrega Florabelle.
+                </p>
+
+                <button class="btn-primary cart-quote" type="button"
+                        th:if="${quotePrompt != null}"
+                        data-action="open-chat"
+                        th:data-message="${quotePrompt}">
+                    Cotizar con Florabelle
+                </button>
+
+                <p class="cart-note" th:if="${cart.anyUnavailable}">
+                    Hay flores en su carrito que no estan a la venta ahora mismo. No
+                    entran en el total ni en la cotizacion.
+                </p>
+
+                <p class="cart-note">
+                    No hay pago en linea todavia. Nada de esto reserva inventario.
+                </p>
+            </aside>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

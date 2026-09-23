@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Stock - Panel Admin - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f6f4f2; color: #222; margin: 0; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center;
+                        padding: 1rem 2rem; background: #1c1c1e; color: #fff; }
+        .admin-header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        .admin-header a.active { color: #fff; font-weight: 700; }
+        main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+        h1 { margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: #efeae6; font-size: 0.8rem; text-transform: uppercase; color: #666; }
+        a.edit-link { color: #d81b60; text-decoration: none; font-weight: 600; }
+        .badge { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .badge.sellable { background: #e3f4e3; color: #187a18; }
+        .badge.unsellable { background: #fde3e3; color: #a11; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-nav :: nav('stock')}"></div>
+
+<main>
+    <h1>Stock por especie</h1>
+    <table>
+        <thead>
+            <tr><th>Especie</th><th>Clave</th><th>Estado</th><th>Cantidad</th><th>Precio base</th><th>Multiplicador</th><th></th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="e : ${entries}">
+                <td th:text="${e.commonName()}">-</td>
+                <td th:text="${e.speciesKey()}">-</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${e.unitPrice().isPresent()} ? 'sellable' : 'unsellable'"
+                          th:text="${e.availabilityLabel()}">-</span>
+                </td>
+                <td th:text="${e.quantity()}">0</td>
+                <td th:text="${e.unitPrice().isPresent()} ? ('$' + ${e.unitPrice().get().amount()}) : '-'">-</td>
+                <td th:text="${e.stock().getImportPriceMultiplier()}">1.000</td>
+                <td><a class="edit-link" th:href="@{'/admin/stock/' + ${e.speciesKey()}}">Editar</a></td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
