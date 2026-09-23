@@ -21,9 +21,15 @@ public class FlowerSpecies {
 
     /** Identity only, as loaded from flowers.json: no id and no botanical detail. */
     public static FlowerSpecies catalogEntry(
-            String speciesKey, String commonName, String scientificName) {
+            String speciesKey, 
+            String commonName, 
+            String scientificName) {
 
-        return new FlowerSpecies(null, speciesKey, commonName, scientificName, null, null, null);
+        return new FlowerSpecies(null, 
+            speciesKey, 
+            commonName, 
+            scientificName, null, 
+            null, null);
     }
 
     /** False for a catalog entry, which has no row behind it yet. */

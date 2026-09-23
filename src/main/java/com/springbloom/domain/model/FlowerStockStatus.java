@@ -1,7 +1,7 @@
 package com.springbloom.domain.model;
 
 /**
- * Mirrors the flower_stock_status Postgres enum. Constant names must stay
+ * Match the flower_stock_status Postgres enum. Constant names must stay
  * identical to the database values. The label is customer facing Spanish.
  */
 public enum FlowerStockStatus {

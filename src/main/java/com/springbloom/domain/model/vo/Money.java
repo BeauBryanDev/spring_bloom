@@ -24,8 +24,8 @@ public record Money(BigDecimal amount) {
             throw new IllegalArgumentException("Money cannot be negative: " + amount);
         }
         amount = amount.setScale(2, RoundingMode.HALF_UP);
-    }
-
+    }  //factyory methods.
+    // money leaves as a BigDecimal, not a double, because that's what the database uses.
     public static Money of(BigDecimal amount) {
         return new Money(amount);
     }
@@ -74,7 +74,9 @@ public record Money(BigDecimal amount) {
             throw new IllegalArgumentException("discount must be within 0..100: " + percentage);
         }
         BigDecimal keptFraction = BigDecimal.ONE
-                .subtract(percentage.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+                .subtract(percentage.divide(BigDecimal.valueOf(100), 
+                6, 
+                RoundingMode.HALF_UP));
                 
         return Money.of(this.amount.multiply(keptFraction));
     }
