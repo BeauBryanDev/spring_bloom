@@ -22,6 +22,11 @@ public class PricingStrategyFactory {
                 throw new IllegalStateException("Two strategies for " + strategy.supportedType());
             }
         }
+        for (ProductType type : ProductType.values()) {
+            if (!this.strategies.containsKey(type)) {
+                throw new IllegalStateException("No pricing strategy registered for " + type);
+            }
+        }
     }
 
     public PricingStrategy forType(ProductType type) {

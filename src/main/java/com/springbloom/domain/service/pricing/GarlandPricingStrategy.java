@@ -1,9 +1,9 @@
 package com.springbloom.domain.service.pricing;
 
+import java.math.BigDecimal;
+
 import com.springbloom.domain.model.ProductType;
 import com.springbloom.domain.model.vo.Money;
-
-import java.math.BigDecimal;
 
 /**
  * Same discount rule as BOUQUET today, kept as its own strategy because
