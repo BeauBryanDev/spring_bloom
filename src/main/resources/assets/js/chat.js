@@ -229,6 +229,15 @@
         bubble.insertBefore(link, bubble.querySelector(".chat-time"));
     }
 
+    /** An order number is paid on the cart page, so the link carries it there. */
+    function appendOrderLink(bubble, orderNumber) {
+        const link = document.createElement("a");
+        link.className = "chat-doc-link";
+        link.href = "/carrito?orden=" + encodeURIComponent(orderNumber);
+        link.textContent = "Pagar Pedido " + orderNumber;
+        bubble.insertBefore(link, bubble.querySelector(".chat-time"));
+    }
+
     /**
      * Provenance for a photo turn: which model named the species, and how sure
      * it was. It is built from the response's `vision` object rather than read
@@ -615,6 +624,9 @@
                     }
                     if (turn.quotationNumber) {
                         appendQuotationLink(bubble, turn.quotationNumber);
+                    }
+                    if (turn.orderNumber) {
+                        appendOrderLink(bubble, turn.orderNumber);
                     }
                 })
                 .catch(function () {

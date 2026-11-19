@@ -42,6 +42,52 @@
             </div>
         </section>
 
+        <!--
+          Paying an order the agent created. Nothing here is rendered by the
+          server: order-pay.js asks /api/orders for the figures, so the page can
+          never show a price the database does not hold.
+        -->
+        <section class="info-section order-pay" id="order-pay">
+            <h2>Ya tengo un pedido</h2>
+            <p>
+                Si Florabelle le creo un pedido en el chat, escriba aqui su numero
+                (por ejemplo <strong>ORD-20260101-12345</strong>) y pague de forma segura.
+            </p>
+
+            <form class="order-pay-form" id="order-pay-form" autocomplete="off">
+                <label class="visually-hidden" for="order-number">Numero de pedido</label>
+                <input type="text" id="order-number" name="orderNumber" placeholder="ORD-AAAAMMDD-NNNNN"
+                       maxlength="40" required/>
+                <button type="submit" class="btn-primary">Buscar pedido</button>
+            </form>
+
+            <p class="order-pay-message" id="order-pay-message" role="status" hidden></p>
+
+            <div class="order-pay-result" id="order-pay-result" hidden>
+                <h3 id="order-pay-title"></h3>
+                <ul class="order-pay-lines" id="order-pay-lines"></ul>
+                <dl class="cart-totals">
+                    <div id="order-pay-discount-row" hidden>
+                        <dt>Descuento por volumen</dt>
+                        <dd id="order-pay-discount"></dd>
+                    </div>
+                    <div class="cart-total-row">
+                        <dt>Total</dt>
+                        <dd id="order-pay-total"></dd>
+                    </div>
+                </dl>
+                <button type="button" class="btn-primary" id="order-pay-button" hidden>
+                    Pagar con Stripe
+                </button>
+                <p class="cart-note">
+                    Modo de pruebas: es una demostracion y no se cobra dinero real. En la
+                    ventana de pago use la tarjeta de prueba 4242 4242 4242 4242, cualquier
+                    fecha futura y cualquier CVC. Las flores no quedan reservadas hasta que
+                    el pago se confirme.
+                </p>
+            </div>
+        </section>
+
         <section class="cart-layout" th:unless="${cart.empty}">
 
             <div class="cart-lines">
@@ -149,7 +195,9 @@
                 </p>
 
                 <p class="cart-note">
-                    No hay pago en linea todavia. Nada de esto reserva inventario.
+                    Este carrito no se paga directamente: Florabelle le prepara una cotizacion
+                    y, cuando la acepte, un pedido con su numero para pagarlo arriba. Nada de
+                    esto reserva inventario.
                 </p>
             </aside>
         </section>
@@ -164,6 +212,7 @@
 
 <script th:src="@{/assets/js/chat.js}"></script>
 <script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/order-pay.js}"></script>
 <script th:src="@{/assets/js/images.js}"></script>
 </body>
 </html>
