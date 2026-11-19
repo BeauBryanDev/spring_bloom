@@ -17,4 +17,13 @@ public interface FlowerStockRepository {
 
     /** Updates an existing row. stock.getId() must be a real flower_stock_id. */
     FlowerStock save(FlowerStock stock);
+
+    /**
+     * Takes stems off an IN_STOCK row in one conditional UPDATE and reports
+     * whether it did. The Java-side canFulfil check can only advise; this is
+     * what stops two customers paying for the last stems at once.
+     *
+     * @return false when the row is not IN_STOCK or holds fewer than the quantity
+     */
+    boolean decrementIfAvailable(Long speciesId, int quantity);
 }

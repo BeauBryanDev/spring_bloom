@@ -36,4 +36,7 @@ public interface QuotationRepository {
      * work the aggregate view never asked for.
      */
     List<QuotationSummary> findAllSummaries();
+
+    /** Changes only the status; the lines are untouched. */
+    void updateStatus(Long quotationId, com.springbloom.domain.model.QuotationStatus status);
 }

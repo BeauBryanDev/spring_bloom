@@ -58,7 +58,8 @@ public interface ChatAgentPort {
      words into the domain's terms.
      */
     record AgentReply(
-            String text, String quotationNumber, String complaintNumber, VisionEvidence vision) {
+            String text, String quotationNumber, String complaintNumber, String orderNumber,
+            VisionEvidence vision) {
 
         public AgentReply {
             if (text == null || text.isBlank()) {
@@ -66,12 +67,17 @@ public interface ChatAgentPort {
             }
         }
 
+        public AgentReply(String text, String quotationNumber, String complaintNumber,
+                VisionEvidence vision) {
+            this(text, quotationNumber, complaintNumber, null, vision);
+        }
+
         public AgentReply(String text, String quotationNumber, String complaintNumber) {
-            this(text, quotationNumber, complaintNumber, null);
+            this(text, quotationNumber, complaintNumber, null, null);
         }
 
         public static AgentReply of(String text) {
-            return new AgentReply(text, null, null, null);
+            return new AgentReply(text, null, null, null, null);
         }
     }
 }

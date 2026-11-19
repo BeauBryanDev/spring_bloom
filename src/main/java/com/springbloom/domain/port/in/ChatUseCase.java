@@ -90,6 +90,7 @@ public interface ChatUseCase {
     /**
      * @param quotationNumber present when this turn produced a quotation
      * @param complaintNumber present when this turn filed a claim
+     * @param orderNumber present when this turn placed an order
      * @param vision present when this turn ran a photo through the trained model
      */
     record ChatTurn(
@@ -97,7 +98,13 @@ public interface ChatUseCase {
             String reply,
             String quotationNumber,
             String complaintNumber,
+            String orderNumber,
             VisionEvidence vision) {
+
+        public ChatTurn(UUID conversationId, String reply, String quotationNumber,
+                String complaintNumber, VisionEvidence vision) {
+            this(conversationId, reply, quotationNumber, complaintNumber, null, vision);
+        }
 
         public Optional<String> quotation() {
             return Optional.ofNullable(quotationNumber);

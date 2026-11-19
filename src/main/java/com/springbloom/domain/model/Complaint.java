@@ -65,7 +65,8 @@ public record Complaint(
     public static Complaint filed(ComplaintType type, String description) {
 
         return new Complaint(null, null, null, null, null,
-                type, ComplaintStatus.OPEN, description, null, null, null);
+                type, ComplaintStatus.OPEN,
+                description, null, null, null);
     }
 
     public boolean persisted() {
@@ -127,23 +128,23 @@ public record Complaint(
 
     /** Closing always states what was decided and when, as the schema demands. */
     public Complaint closedAs(ComplaintStatus outcome,
-         String howItWasResolved, 
-         Instant when) {
+            String howItWasResolved,
+            Instant when) {
 
         if (outcome == null || !outcome.closed()) {
 
             throw new IllegalArgumentException("Only RESOLVED or REJECTED close a complaint");
         }
-        return new Complaint(id, 
-            complaintNumber, 
-            orderId, 
-            customerId, 
-            conversationId,
-            type, 
-            outcome, 
-            description, 
-            howItWasResolved, 
-            createdAt, 
-            when);
+        return new Complaint(id,
+                complaintNumber,
+                orderId,
+                customerId,
+                conversationId,
+                type,
+                outcome,
+                description,
+                howItWasResolved,
+                createdAt,
+                when);
     }
 }
