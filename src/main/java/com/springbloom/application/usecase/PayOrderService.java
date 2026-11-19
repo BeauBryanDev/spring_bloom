@@ -75,11 +75,18 @@ public class PayOrderService implements PayOrderUseCase {
 
         List<ViewLine> lines = order.items().stream()
                 .flatMap(item -> item.species().stream()
-                        .map(line -> new ViewLine(item.productType(), line.commonNameSnapshot(),
-                                line.quantity(), line.unitPriceSnapshot(), line.lineTotal())))
+                        .map(line -> new ViewLine(item.productType(),
+                                line.commonNameSnapshot(),
+                                line.quantity(),
+                                line.unitPriceSnapshot(),
+                                line.lineTotal())))
                 .toList();
 
-        return new OrderView(order.orderNumber(), order.status(), paid, payable, lines,
-                order.subtotal(), order.discountAmount(), order.totalAmount());
+        return new OrderView(order.orderNumber(),
+                order.status(),
+                paid, payable, lines,
+                order.subtotal(),
+                order.discountAmount(),
+                order.totalAmount());
     }
 }
