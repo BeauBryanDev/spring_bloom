@@ -93,7 +93,7 @@ public class ChatController {
                 request.sessionKey(), request.message(), request.attachment()));
 
         return new ChatResponse(turn.conversationId(), turn.reply(),
-                turn.quotationNumber(), turn.complaintNumber(),
+                turn.quotationNumber(), turn.complaintNumber(), turn.orderNumber(),
                 VisionBadge.of(turn.vision()));
     }
 
@@ -173,6 +173,7 @@ public class ChatController {
             String reply,
             String quotationNumber,
             String complaintNumber,
+            String orderNumber,
             VisionBadge vision) {
     }
 

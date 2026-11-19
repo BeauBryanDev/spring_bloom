@@ -40,6 +40,15 @@ public class FlowerStockRepositoryAdapter implements FlowerStockRepository {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public boolean decrementIfAvailable(Long speciesId, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive: " + quantity);
+        }
+        return jpaRepository.decrementIfAvailable(speciesId, quantity) == 1;
+    }
+
     /** Loads the row by id and mutates it in place, so updated_at's trigger fires on a real UPDATE. */
     @Override
     @Transactional

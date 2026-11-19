@@ -11,6 +11,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
 import com.springbloom.domain.model.Complaint;
+import com.springbloom.domain.model.FlowerOrder;
 import com.springbloom.domain.model.ComplaintType;
 import com.springbloom.domain.model.ProductType;
 import com.springbloom.domain.model.Quotation;
@@ -25,6 +26,8 @@ import com.springbloom.domain.port.in.ClassifyFlowerUseCase.ClassifyFlowerComman
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase.IdentifiedFlower;
 import com.springbloom.domain.port.in.FileComplaintUseCase;
 import com.springbloom.domain.port.in.FileComplaintUseCase.FileComplaintCommand;
+import com.springbloom.domain.port.in.PlaceOrderUseCase;
+import com.springbloom.domain.port.in.PlaceOrderUseCase.PlaceOrderCommand;
 import com.springbloom.domain.port.in.RequestQuotationUseCase;
 import com.springbloom.domain.port.in.RequestQuotationUseCase.LineRequest;
 import com.springbloom.domain.port.in.RequestQuotationUseCase.RequestQuotationCommand;
@@ -56,6 +59,7 @@ public class FlorabelleTools {
     private final CheckAvailabilityUseCase checkAvailability;
     private final RequestQuotationUseCase requestQuotation;
     private final FileComplaintUseCase fileComplaint;
+    private final PlaceOrderUseCase placeOrder;
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
     private final String sessionKey;
@@ -75,6 +79,9 @@ public class FlorabelleTools {
     /** Same, for a claim filed this turn. */
     private final AtomicReference<String> lastComplaintNumber = new AtomicReference<>();
 
+    /** Same, for an order placed this turn. */
+    private final AtomicReference<String> lastOrderNumber = new AtomicReference<>();
+
     /**
      * What the trained model reported this turn, so the reply can carry it as
      * evidence instead of the UI having to trust the agent's prose for it.
@@ -85,6 +92,7 @@ public class FlorabelleTools {
             CheckAvailabilityUseCase checkAvailability,
             RequestQuotationUseCase requestQuotation,
             FileComplaintUseCase fileComplaint,
+            PlaceOrderUseCase placeOrder,
             ClassifyFlowerUseCase classifyFlower,
             KnowledgeSearchPort knowledgeSearch,
             String sessionKey,
@@ -93,6 +101,7 @@ public class FlorabelleTools {
         this.checkAvailability = checkAvailability;
         this.requestQuotation = requestQuotation;
         this.fileComplaint = fileComplaint;
+        this.placeOrder = placeOrder;
         this.classifyFlower = classifyFlower;
         this.knowledgeSearch = knowledgeSearch;
         this.sessionKey = sessionKey;
@@ -105,6 +114,10 @@ public class FlorabelleTools {
 
     public String lastComplaintNumber() {
         return lastComplaintNumber.get();
+    }
+
+    public String lastOrderNumber() {
+        return lastOrderNumber.get();
     }
 
     public VisionEvidence lastVision() {
@@ -244,6 +257,48 @@ public class FlorabelleTools {
     }
 
     @Tool(description = """
+            Turn a quotation the customer has agreed to buy into a real, saved order and \
+            return its order number (ORD-...). Call this only when the customer clearly \
+            wants to buy, the quotation number came from quoteSingleFlower or quoteBouquet \
+            in this conversation, and you already have their full name, phone number and \
+            delivery address. This does NOT take payment and does NOT reserve flowers: the \
+            customer pays afterwards on the shop's website, using the order number. Calling \
+            it twice for the same quotation returns the same order.""")
+    public OrderAnswer placeOrder(
+            @ToolParam(description = "The COT-... number the quotation tool returned")
+            String quotationNumber,
+            @ToolParam(description = "The customer's full name")
+            String fullName,
+            @ToolParam(description = "The customer's phone number")
+            String phone,
+            @ToolParam(description = "Where the flowers are to be delivered")
+            String deliveryAddress,
+            @ToolParam(required = false, description = "Their email, only if they offered it")
+            String email) {
+
+        try {
+            FlowerOrder order = placeOrder.place(new PlaceOrderCommand(
+                    sessionKey, quotationNumber, fullName, phone, deliveryAddress, email));
+
+            lastOrderNumber.set(order.orderNumber());
+            log.info("Session {} placed order {}", sessionKey, order.orderNumber());
+
+            return new OrderAnswer(true, order.orderNumber(),
+                    order.totalAmount().amount().toPlainString(), null);
+
+        } catch (UnavailableSpeciesException unavailable) {
+            log.info("Session {} could not order {}: {}",
+                    sessionKey, unavailable.getSpeciesKey(), unavailable.getReason());
+            return new OrderAnswer(false, null, null,
+                    unavailable.getSpeciesKey() + ": " + unavailable.getReason());
+
+        } catch (IllegalArgumentException invalid) {
+            log.warn("Session {} placed an invalid order: {}", sessionKey, invalid.getMessage());
+            return new OrderAnswer(false, null, null, invalid.getMessage());
+        }
+    }
+
+    @Tool(description = """
             Look up what Spring-Bloom's own written policies say: delivery, coverage and \
             delivery windows, refunds for damaged flowers, cancellations, imports, \
             payment methods, quality standards, how quotations work, and the Colombian \
@@ -339,6 +394,10 @@ public class FlorabelleTools {
                 .findFirst()
                 .map(AvailableFlower::speciesKey)
                 .orElseThrow(() -> new UnknownSpeciesException(flowerName));
+    }
+
+    /** totalCop is the order's total as a plain string, or null when it was not placed. */
+    public record OrderAnswer(boolean placed, String orderNumber, String totalCop, String problem) {
     }
 
     /**

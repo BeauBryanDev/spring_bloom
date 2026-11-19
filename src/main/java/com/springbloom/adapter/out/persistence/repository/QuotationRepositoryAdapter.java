@@ -117,6 +117,15 @@ public class QuotationRepositoryAdapter implements QuotationRepository {
     }
 
     @Override
+    @Transactional
+    public void updateStatus(Long quotationId, QuotationStatus status) {
+        QuotationEntity entity = jpaRepository.findById(quotationId)
+                .orElseThrow(() -> new IllegalArgumentException("No quotation with id " + quotationId));
+        entity.setStatus(status);
+        jpaRepository.saveAndFlush(entity);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<QuotationSummary> findAllSummaries() {
         return jpaRepository.findAllSummaryRows().stream()
