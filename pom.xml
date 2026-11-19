@@ -89,6 +89,13 @@
             <artifactId>spring-ai-starter-model-anthropic</artifactId>
         </dependency>
 
+        <!-- Stripe Checkout (hosted) + webhook signature check. Sandbox only. -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>33.4.0</version>
+        </dependency>
+
         <!-- Embeddings del RAG: text-embedding-3-small. Solo embeddings; el
              chat sigue siendo Anthropic y se fija explicitamente en SpringAIConfig. -->
         <dependency>
