@@ -79,10 +79,11 @@ public class ChatService implements ChatUseCase {
                 command.sessionKey(), conversationId,
                 reply.quotationNumber() == null ? "" : " with quotation " + reply.quotationNumber(),
                 reply.complaintNumber() == null ? "" : " with complaint " + reply.complaintNumber()
+                        + (reply.orderNumber() == null ? "" : " with order " + reply.orderNumber())
                 );
 
         return new ChatTurn(conversationId, reply.text(),
-                reply.quotationNumber(), reply.complaintNumber(), reply.vision());
+                reply.quotationNumber(), reply.complaintNumber(), reply.orderNumber(), reply.vision());
     }
 
     /**
