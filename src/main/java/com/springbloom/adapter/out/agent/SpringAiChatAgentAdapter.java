@@ -69,8 +69,16 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
     @Override
     public AgentReply reply(AgentRequest request) {
         FlorabelleTools tools = new FlorabelleTools(
-                checkAvailability, requestQuotation, fileComplaint, placeOrder, lookupOrder,
-                submitComplaint, classifyFlower, knowledgeSearch, request.sessionKey(), request.image());
+                                checkAvailability, 
+                                requestQuotation, 
+                                fileComplaint, 
+                                placeOrder, 
+                                lookupOrder,
+                                submitComplaint, 
+                                classifyFlower, 
+                                knowledgeSearch, 
+                                request.sessionKey(), 
+                                request.image());
 
         String answer = chatClient.prompt()
                 .messages(toSpringAi(request.history()))
@@ -91,8 +99,10 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
             answer = "Disculpe, no pude procesar su mensaje. Podria repetirlo?";
         }
 
-        return new AgentReply(answer, tools.lastQuotationNumber(), tools.lastComplaintNumber(),
-                tools.lastOrderNumber(), tools.lastVision());
+        return new AgentReply(answer, tools.lastQuotationNumber(), 
+                                    tools.lastComplaintNumber(),
+                                    tools.lastOrderNumber(), 
+                                    tools.lastVision());
     }
 
     /**
