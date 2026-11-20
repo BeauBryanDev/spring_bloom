@@ -1,5 +1,7 @@
 package com.springbloom.adapter.out.persistence.repository;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ public class CustomerRepositoryAdapter implements CustomerRepository {
     @Override
     @Transactional
     public Customer save(Customer customer) {
+        
         CustomerEntity entity = new CustomerEntity();
         entity.setFullName(customer.fullName());
         entity.setEmail(customer.email());
@@ -25,5 +28,16 @@ public class CustomerRepositoryAdapter implements CustomerRepository {
         entity.setDeliveryAddress(customer.deliveryAddress());
 
         return customer.withId(jpaRepository.saveAndFlush(entity).getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Customer> findById(Long id) {
+
+        return jpaRepository.findById(id).map(entity -> new Customer(entity.getId(),
+                entity.getFullName(), 
+                entity.getEmail(), 
+                entity.getPhone(),
+                entity.getDeliveryAddress()));
     }
 }
