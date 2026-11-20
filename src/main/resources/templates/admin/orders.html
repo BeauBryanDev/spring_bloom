@@ -19,6 +19,14 @@
         th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
         th { background: #efeae6; font-size: 0.8rem; text-transform: uppercase; color: #666; }
         .empty { color: #999; font-style: italic; padding: 1rem; }
+        .flash { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.25rem; }
+        .flash.done { background: #e3f4e6; color: #1e6b2e; }
+        .flash.problem { background: #fde8e8; color: #a02424; }
+        td form { margin: 0; }
+        td button { border: 0; border-radius: 6px; padding: 0.35rem 0.75rem; cursor: pointer;
+                    font-size: 0.8rem; color: #fff; }
+        td button.dispatch { background: #2f6fd1; }
+        td button.deliver { background: #2e8b57; }
     </style>
 </head>
 <body>
@@ -28,14 +36,17 @@
 <main>
     <h1>Pedidos</h1>
     <p class="notice">
-        Vista de solo lectura. El modulo de pedidos (confirmacion, descuento de stock,
-        cambio de estado) todavia no esta construido - esto solo muestra lo que ya
-        existe en flower_order.
+        Un pedido pagado puede despacharse, y uno despachado puede marcarse como
+        entregado. La hora de entrega abre la ventana de 24 horas para reclamos.
+        El detalle completo del pedido todavia no esta construido.
     </p>
+
+    <p class="flash done" th:if="${done}" th:text="${done}">Hecho</p>
+    <p class="flash problem" th:if="${problem}" th:text="${problem}">Problema</p>
 
     <table th:if="${not #lists.isEmpty(orders)}">
         <thead>
-            <tr><th>Numero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Fecha</th></tr>
+            <tr><th>Numero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Fecha</th><th>Envio</th></tr>
         </thead>
         <tbody>
             <tr th:each="o : ${orders}">
@@ -44,6 +55,16 @@
                 <td th:text="${o.status()}">PENDING</td>
                 <td th:text="'$' + ${#numbers.formatDecimal(o.totalAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
                 <td th:text="${#temporals.format(o.createdAt(), 'dd/MM/yyyy HH:mm')}">-</td>
+                <td>
+                    <form method="post" th:if="${o.status().name() == 'CONFIRMED' or o.status().name() == 'PREPARING' or o.status().name() == 'READY_FOR_DISPATCH'}"
+                          th:action="@{'/admin/orders/' + ${o.orderNumber()} + '/dispatch'}">
+                        <button class="dispatch" type="submit">Despachar</button>
+                    </form>
+                    <form method="post" th:if="${o.status().name() == 'DISPATCHED'}"
+                          th:action="@{'/admin/orders/' + ${o.orderNumber()} + '/deliver'}">
+                        <button class="deliver" type="submit">Marcar entregado</button>
+                    </form>
+                </td>
             </tr>
         </tbody>
     </table>

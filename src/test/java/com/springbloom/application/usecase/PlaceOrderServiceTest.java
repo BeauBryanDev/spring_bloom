@@ -162,7 +162,7 @@ class PlaceOrderServiceTest {
         when(quotations.findByNumber(NUMBER)).thenReturn(Optional.of(
                 quotation(CONVERSATION, NOW.plusSeconds(3600), QuotationStatus.DRAFT)));
 
-        PlaceOrderCommand noAddress = new PlaceOrderCommand(SESSION, NUMBER, "Ana", "300", " ", null);
+        PlaceOrderCommand noAddress = new PlaceOrderCommand(SESSION, NUMBER, "Ana", "3001234567", " ", null);
 
         assertThatThrownBy(() -> service.place(noAddress)).isInstanceOf(IllegalArgumentException.class);
         verify(orders, never()).save(any());

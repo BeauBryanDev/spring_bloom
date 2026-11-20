@@ -29,12 +29,27 @@ public interface LookupOrderUseCase {
         }
     }
 
-    /** NOT_MATCHED covers both an unknown order and a wrong phone, on purpose. */
+    /**
+     * NOT_MATCHED covers both an unknown order and a wrong phone, on purpose. The
+     * wording is the customer-facing reason, as with FlowerStockStatus.label().
+     */
     enum Outcome {
-        VERIFIED,
-        NOT_MATCHED,
-        INVALID_PHONE,
-        LOCKED
+        VERIFIED(""),
+        NOT_MATCHED("No pude verificar ese pedido con esos datos. Revise el numero de pedido "
+                + "y el telefono con el que se hizo"),
+        INVALID_PHONE("El telefono debe ser un celular colombiano de 10 digitos que empiece por 3"),
+        LOCKED("Por seguridad no puedo seguir verificando pedidos en esta conversacion por un "
+                + "rato. El equipo humano puede ayudarle desde la pagina de contacto");
+
+        private final String reason;
+
+        Outcome(String reason) {
+            this.reason = reason;
+        }
+
+        public String reason() {
+            return reason;
+        }
     }
 
     record OrderLookup(Outcome outcome, VerifiedOrder order) {

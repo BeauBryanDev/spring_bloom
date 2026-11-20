@@ -17,9 +17,11 @@ import com.springbloom.domain.model.vo.ImageAttachment;
 import com.springbloom.domain.port.in.CheckAvailabilityUseCase;
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase;
 import com.springbloom.domain.port.in.FileComplaintUseCase;
+import com.springbloom.domain.port.in.LookupOrderUseCase;
 import com.springbloom.domain.port.in.PlaceOrderUseCase;
 import com.springbloom.domain.port.in.RequestQuotationUseCase;
 import com.springbloom.domain.port.out.ChatAgentPort;
+import com.springbloom.domain.port.in.SubmitComplaintUseCase;
 import com.springbloom.domain.port.out.KnowledgeSearchPort;
 
 /**
@@ -37,6 +39,8 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
     private final RequestQuotationUseCase requestQuotation;
     private final FileComplaintUseCase fileComplaint;
     private final PlaceOrderUseCase placeOrder;
+    private final LookupOrderUseCase lookupOrder;
+    private final SubmitComplaintUseCase submitComplaint;
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
 
@@ -46,6 +50,8 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
             RequestQuotationUseCase requestQuotation,
             FileComplaintUseCase fileComplaint,
             PlaceOrderUseCase placeOrder,
+            LookupOrderUseCase lookupOrder,
+            SubmitComplaintUseCase submitComplaint,
             ClassifyFlowerUseCase classifyFlower,
             KnowledgeSearchPort knowledgeSearch) {
 
@@ -54,6 +60,8 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
         this.requestQuotation = requestQuotation;
         this.fileComplaint = fileComplaint;
         this.placeOrder = placeOrder;
+        this.lookupOrder = lookupOrder;
+        this.submitComplaint = submitComplaint;
         this.classifyFlower = classifyFlower;
         this.knowledgeSearch = knowledgeSearch;
     }
@@ -61,8 +69,8 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
     @Override
     public AgentReply reply(AgentRequest request) {
         FlorabelleTools tools = new FlorabelleTools(
-                checkAvailability, requestQuotation, fileComplaint, placeOrder, classifyFlower,
-                knowledgeSearch, request.sessionKey(), request.image());
+                checkAvailability, requestQuotation, fileComplaint, placeOrder, lookupOrder,
+                submitComplaint, classifyFlower, knowledgeSearch, request.sessionKey(), request.image());
 
         String answer = chatClient.prompt()
                 .messages(toSpringAi(request.history()))

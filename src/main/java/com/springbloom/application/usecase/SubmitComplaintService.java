@@ -54,15 +54,19 @@ public class SubmitComplaintService implements SubmitComplaintUseCase {
 
         Long customerId = conversation.customer().orElse(null);
         if (customerId == null) {
+
             return SubmitResult.refused(Refusal.NOT_VERIFIED);
         }
 
         // Someone else's order and an unknown one get the same refusal.
         Optional<FlowerOrder> order = orders.findByNumber(command.orderNumber())
                 .filter(found -> customerId.equals(found.customerId()));
+
         if (order.isEmpty()) {
             log.warn("Session {} tried to claim on order {} it has not verified",
-                    command.sessionKey(), command.orderNumber());
+                    command.sessionKey(),
+                     command.orderNumber());
+
             return SubmitResult.refused(Refusal.NOT_VERIFIED);
         }
 
@@ -77,12 +81,15 @@ public class SubmitComplaintService implements SubmitComplaintUseCase {
         Optional<Complaint> alreadyOpen = complaints.findByOrderId(orderId).stream()
                 .filter(existing -> existing.type() == command.type() && existing.open())
                 .findFirst();
+
         if (alreadyOpen.isPresent()) {
+
             return SubmitResult.alreadyOpen(alreadyOpen.get());
         }
 
         String description = command.description().trim();
         if (WINDOWED.contains(command.type())) {
+
             description = withLateNote(description, shipment);
         }
 
@@ -110,6 +117,7 @@ public class SubmitComplaintService implements SubmitComplaintUseCase {
         String note = "\n[Fuera de la ventana de 24 h: entregado hace " + elapsed.toHours() + " h]";
         int room = Complaint.MAX_DESCRIPTION - note.length();
         String base = description.length() > room ? description.substring(0, room) : description;
+        
         return base + note;
     }
 }

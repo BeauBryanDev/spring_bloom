@@ -26,12 +26,19 @@ import com.springbloom.domain.port.in.ClassifyFlowerUseCase.ClassifyFlowerComman
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase.IdentifiedFlower;
 import com.springbloom.domain.port.in.FileComplaintUseCase;
 import com.springbloom.domain.port.in.FileComplaintUseCase.FileComplaintCommand;
+import com.springbloom.domain.port.in.LookupOrderUseCase;
+import com.springbloom.domain.port.in.LookupOrderUseCase.LookupOrderCommand;
+import com.springbloom.domain.port.in.LookupOrderUseCase.OrderLookup;
+import com.springbloom.domain.port.in.LookupOrderUseCase.VerifiedOrder;
 import com.springbloom.domain.port.in.PlaceOrderUseCase;
 import com.springbloom.domain.port.in.PlaceOrderUseCase.PlaceOrderCommand;
 import com.springbloom.domain.port.in.RequestQuotationUseCase;
 import com.springbloom.domain.port.in.RequestQuotationUseCase.LineRequest;
 import com.springbloom.domain.port.in.RequestQuotationUseCase.RequestQuotationCommand;
 import com.springbloom.domain.port.in.RequestQuotationUseCase.SpeciesRequest;
+import com.springbloom.domain.port.in.SubmitComplaintUseCase;
+import com.springbloom.domain.port.in.SubmitComplaintUseCase.SubmitComplaintCommand;
+import com.springbloom.domain.port.in.SubmitComplaintUseCase.SubmitResult;
 import com.springbloom.domain.port.out.KnowledgeSearchPort;
 import com.springbloom.domain.port.out.KnowledgeSearchPort.KnowledgePassage;
 import com.springbloom.domain.port.out.KnowledgeSearchPort.KnowledgeQuery;
@@ -60,6 +67,8 @@ public class FlorabelleTools {
     private final RequestQuotationUseCase requestQuotation;
     private final FileComplaintUseCase fileComplaint;
     private final PlaceOrderUseCase placeOrder;
+    private final LookupOrderUseCase lookupOrder;
+    private final SubmitComplaintUseCase submitComplaint;
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
     private final String sessionKey;
@@ -93,6 +102,8 @@ public class FlorabelleTools {
             RequestQuotationUseCase requestQuotation,
             FileComplaintUseCase fileComplaint,
             PlaceOrderUseCase placeOrder,
+            LookupOrderUseCase lookupOrder,
+            SubmitComplaintUseCase submitComplaint,
             ClassifyFlowerUseCase classifyFlower,
             KnowledgeSearchPort knowledgeSearch,
             String sessionKey,
@@ -102,6 +113,8 @@ public class FlorabelleTools {
         this.requestQuotation = requestQuotation;
         this.fileComplaint = fileComplaint;
         this.placeOrder = placeOrder;
+        this.lookupOrder = lookupOrder;
+        this.submitComplaint = submitComplaint;
         this.classifyFlower = classifyFlower;
         this.knowledgeSearch = knowledgeSearch;
         this.sessionKey = sessionKey;
@@ -225,30 +238,88 @@ public class FlorabelleTools {
     }
 
     @Tool(description = """
-            Record a customer complaint about an order that already happened: flowers \
-            that arrived damaged, a late or missing delivery, or the wrong item. Returns \
-            the complaint number the customer can quote when following it up. Filing a \
-            complaint does NOT grant a refund or a replacement - the shop decides that \
-            afterwards.""")
+            Verify that a customer owns an order BEFORE taking a claim about it. Needs the \
+            order number (ORD-...) and the 10-digit mobile phone the order was placed with. \
+            Returns the order's real status, whether it was delivered, and whether it is \
+            still inside the 24-hour report window. If verified is false, relay the problem \
+            exactly and never hint at which of the two data was wrong.""")
+    public OrderLookupAnswer lookupOrder(
+            @ToolParam(description = "The ORD-... order number the customer gave")
+            String orderNumber,
+            @ToolParam(description = "The customer's mobile phone, 10 digits, as they wrote it")
+            String phone) {
+
+        try {
+            OrderLookup result = lookupOrder.lookup(
+                    new LookupOrderCommand(sessionKey, orderNumber, phone));
+
+            if (!result.isVerified()) {
+                return OrderLookupAnswer.refused(result.outcome().reason());
+            }
+            return OrderLookupAnswer.of(result.order());
+
+        } catch (IllegalArgumentException invalid) {
+            log.warn("Session {} sent an invalid lookup: {}", sessionKey, invalid.getMessage());
+            return OrderLookupAnswer.refused(invalid.getMessage());
+        }
+    }
+
+    @Tool(description = """
+            Record a claim about an order that lookupOrder already verified in this \
+            conversation. Returns the complaint number (REC-...). Filing does NOT grant a \
+            refund or a replacement - the shop decides that afterwards. Refused when the \
+            order was not verified, or when it has not been delivered yet and the claim is \
+            about its condition.""")
+    public SubmitComplaintAnswer submitComplaint(
+            @ToolParam(description = "The ORD-... number lookupOrder verified")
+            String orderNumber,
+            @ToolParam(description = "What went wrong: DAMAGED_FLOWERS, LATE_DELIVERY, "
+                    + "NOT_DELIVERED, WRONG_ITEM or OTHER")
+            ComplaintType type,
+            @ToolParam(description = "What the customer described, in their own words, in Spanish")
+            String description) {
+
+        try {
+            SubmitResult result = submitComplaint.submit(
+                    new SubmitComplaintCommand(sessionKey, orderNumber, type, description));
+
+            if (result.refusal() != null) {
+                return SubmitComplaintAnswer.refused(result.refusal().reason());
+            }
+
+            Complaint complaint = result.complaint();
+            lastComplaintNumber.set(complaint.complaintNumber());
+            return SubmitComplaintAnswer.of(complaint, result.alreadyOpen());
+
+        } catch (IllegalArgumentException invalid) {
+            log.warn("Session {} submitted an invalid complaint: {}", sessionKey, invalid.getMessage());
+            return SubmitComplaintAnswer.refused(invalid.getMessage());
+        }
+    }
+
+    @Tool(description = """
+            Record a complaint from a customer who could NOT be verified: flowers that \
+            arrived damaged, a late or missing delivery, or the wrong item. It is not linked \
+            to any order. Returns the complaint number the customer can quote when following \
+            it up. Filing a complaint does NOT grant a refund or a replacement - the shop \
+            decides that afterwards. Prefer lookupOrder and submitComplaint whenever the \
+            customer has their order number and phone.""")
     public ComplaintAnswer fileComplaint(
             @ToolParam(description = "What went wrong: DAMAGED_FLOWERS, LATE_DELIVERY, "
                     + "NOT_DELIVERED, WRONG_ITEM or OTHER")
             ComplaintType type,
             @ToolParam(description = "What the customer described, in their own words, in Spanish")
-            String description,
-            @ToolParam(required = false,
-                    description = "The ORD-... order number, only if the customer gave one")
-            String orderNumber) {
+            String description) {
 
         try {
             Complaint filed = fileComplaint.file(
-                    new FileComplaintCommand(sessionKey, type, description, orderNumber));
+                    new FileComplaintCommand(sessionKey, type, description, null));
 
             lastComplaintNumber.set(filed.complaintNumber());
             log.info("Session {} filed complaint {}", sessionKey, filed.complaintNumber());
 
             return new ComplaintAnswer(true, filed.complaintNumber(), filed.type().label(),
-                    filed.status().label(), filed.order().isPresent(), null);
+                    filed.status().label(), false, null);
 
         } catch (IllegalArgumentException invalid) {
             log.warn("Session {} filed an invalid complaint: {}", sessionKey, invalid.getMessage());
@@ -411,6 +482,54 @@ public class FlorabelleTools {
             String status,
             boolean orderIdentified,
             String problem) {
+    }
+
+    /**
+     * What the customer may be told about an order. shipmentStatus is null before a
+     * shipment exists; the delivery fields are null until it is delivered.
+     */
+    public record OrderLookupAnswer(
+            boolean verified,
+            String problem,
+            String orderNumber,
+            String orderStatus,
+            String shipmentStatus,
+            Long hoursSinceDelivery,
+            boolean withinReportWindow,
+            String totalCop,
+            List<String> items) {
+
+        static OrderLookupAnswer refused(String problem) {
+            return new OrderLookupAnswer(false, problem, null, null, null, null, false, null, List.of());
+        }
+
+        static OrderLookupAnswer of(VerifiedOrder order) {
+            return new OrderLookupAnswer(true, null, order.orderNumber(), order.status().name(),
+                    order.shipmentStatus() == null ? null : order.shipmentStatus().name(),
+                    order.hoursSinceDelivery(), order.withinReportWindow(),
+                    order.totalAmount().amount().toPlainString(), order.items());
+        }
+    }
+
+    /** alreadyRegistered is true when an open claim of the same type already existed. */
+    public record SubmitComplaintAnswer(
+            boolean filed,
+            boolean alreadyRegistered,
+            String complaintNumber,
+            String type,
+            String status,
+            String problem) {
+
+        static SubmitComplaintAnswer refused(String problem) {
+            return new SubmitComplaintAnswer(false, false, null, null, null, problem);
+        }
+
+        static SubmitComplaintAnswer of(Complaint complaint, boolean alreadyRegistered) {
+            return new SubmitComplaintAnswer(true, alreadyRegistered, 
+                    complaint.complaintNumber(),
+                    complaint.type().label(), 
+                    complaint.status().label(), null);
+        }
     }
 
     /**
@@ -579,7 +698,8 @@ public class FlorabelleTools {
 
         static QuotationAnswer refused(String speciesKey, String reason) {
             return new QuotationAnswer(
-                    false, null, null, null, null, null, null, speciesKey, reason);
+                    false, null, null, null, null, null, null, 
+                    speciesKey, reason);
         }
     }
 }

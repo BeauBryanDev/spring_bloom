@@ -64,10 +64,23 @@ class FlowerOrderTest {
     @Test
     @DisplayName("a customer needs a name, phone and address; email is optional")
     void customerValidation() {
-        assertThat(Customer.unsaved("Ana", " ", "300", "Calle 1").email()).isNull();
-        assertThatThrownBy(() -> Customer.unsaved("", null, "300", "Calle 1"))
+        assertThat(Customer.unsaved("Ana", " ", "3001234567", "Calle 1").email()).isNull();
+        assertThatThrownBy(() -> Customer.unsaved("", null, "3001234567", "Calle 1"))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Customer.unsaved("Ana", null, "300", " "))
+        assertThatThrownBy(() -> Customer.unsaved("Ana", null, "3001234567", " "))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("a new customer needs a ten-digit mobile starting with 3, stored as digits only")
+    void customerPhoneRule() {
+        assertThat(Customer.unsaved("Ana", null, "300 123-4567", "Calle 1").phone())
+                .isEqualTo("3001234567");
+
+        for (String bad : new String[] {"+57 300 123 4567", "6012345678", "2001234567", "300123", "abc", " "}) {
+            assertThatThrownBy(() -> Customer.unsaved("Ana", null, bad, "Calle 1"))
+                    .as(bad)
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 }
