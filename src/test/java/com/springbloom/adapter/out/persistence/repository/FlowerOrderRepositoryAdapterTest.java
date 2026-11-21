@@ -123,6 +123,21 @@ class FlowerOrderRepositoryAdapterTest {
     }
 
     @Test
+    @DisplayName("the admin summary joins the customer name and includes the new order")
+    void summariesCarryCustomerName() {
+        FlowerOrder saved = savedOrder(savedQuotation());
+
+        var summary = orders.findAllSummaries().stream()
+                .filter(row -> row.orderNumber().equals(saved.orderNumber()))
+                .findFirst().orElseThrow();
+
+        assertThat(summary.customerName()).isEqualTo("Test Cliente");
+        assertThat(summary.status()).isEqualTo(OrderStatus.PENDING);
+        assertThat(summary.totalAmount()).isEqualTo(saved.totalAmount());
+        assertThat(summary.createdAt()).isNotNull();
+    }
+
+    @Test
     @DisplayName("a quotation converts to at most one order")
     void oneOrderPerQuotation() {
         Quotation quotation = savedQuotation();
@@ -181,6 +196,19 @@ class FlowerOrderRepositoryAdapterTest {
                 "SELECT status::text FROM payment WHERE id = ?", String.class, pending.id()))
                 .isEqualTo("PAID");
         assertThat(payments.existsPaidForOrder(order.id())).isTrue();
+    }
+
+    @Test
+    @DisplayName("payments for an order come back newest first")
+    void paymentsByOrder() {
+        FlowerOrder order = savedOrder(savedQuotation());
+        Payment first = payments.save(Payment.pending("PAY-" + UUID.randomUUID().toString().replace("-", ""),
+                order.id(), "cs_a_" + UUID.randomUUID(), order.totalAmount(), "COP"));
+        Payment second = payments.save(Payment.pending("PAY-" + UUID.randomUUID().toString().replace("-", ""),
+                order.id(), "cs_b_" + UUID.randomUUID(), order.totalAmount(), "COP"));
+
+        assertThat(payments.findByOrderId(order.id())).extracting(Payment::id)
+                .containsExactly(second.id(), first.id());
     }
 
     @Test
