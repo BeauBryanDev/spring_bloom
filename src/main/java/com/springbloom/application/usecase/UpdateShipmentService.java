@@ -1,9 +1,7 @@
 package com.springbloom.application.usecase;
 
 import java.time.Clock;
-import java.util.EnumSet;
 import java.util.Locale;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +30,6 @@ public class UpdateShipmentService implements UpdateShipmentUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateShipmentService.class);
 
-    /** Paid orders: the only ones that may leave the warehouse. */
-    private static final Set<OrderStatus> READY_TO_LEAVE = EnumSet.of(
-                                                            OrderStatus.CONFIRMED, 
-                                                            OrderStatus.PREPARING, 
-                                                            OrderStatus.READY_FOR_DISPATCH);
-
     private final FlowerOrderRepository orders;
     private final CustomerRepository customers;
     private final ShipmentRepository shipments;
@@ -48,7 +40,7 @@ public class UpdateShipmentService implements UpdateShipmentUseCase {
     public Shipment dispatch(String orderNumber) {
         FlowerOrder order = find(orderNumber);
 
-        if (!READY_TO_LEAVE.contains(order.status())) {
+        if (!order.status().canDispatch()) {
             throw new IllegalArgumentException(
                     "Solo un pedido pagado puede despacharse. Estado actual: " + order.status());
         }
@@ -72,7 +64,7 @@ public class UpdateShipmentService implements UpdateShipmentUseCase {
     public Shipment deliver(String orderNumber) {
         FlowerOrder order = find(orderNumber);
 
-        if (order.status() != OrderStatus.DISPATCHED) {
+        if (!order.status().canDeliver()) {
             throw new IllegalArgumentException(
                     "Solo un pedido despachado puede marcarse entregado. Estado actual: "
                             + order.status());

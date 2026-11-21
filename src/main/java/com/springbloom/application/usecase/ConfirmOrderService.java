@@ -86,7 +86,7 @@ public class ConfirmOrderService implements ConfirmOrderUseCase {
                 () -> new IllegalStateException("Payment " + payment.paymentReference() + " has no order"));
         Instant now = storeClock.instant().truncatedTo(ChronoUnit.MICROS);
 
-        if (order.status() != OrderStatus.PENDING) {
+        if (!order.status().canTransitionTo(OrderStatus.CONFIRMED)) {
             log.error("Payment {} landed on {} which is {}", payment.paymentReference(),
                     order.orderNumber(), order.status());
             payments.markPaid(payment.id(), event.paymentIntentId(), NOT_PENDING_NOTE, now);
