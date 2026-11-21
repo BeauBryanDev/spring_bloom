@@ -22,7 +22,8 @@ public record Payment(
 
     public static Payment pending(
             String paymentReference,
-            Long orderId, String sessionId,
+            Long orderId, 
+            String sessionId,
             Money amount,
             String currency) {
 
@@ -38,5 +39,10 @@ public record Payment(
 
     public boolean isPaid() {
         return status == PaymentStatus.PAID;
+    }
+
+    /** A paid attempt carrying a note: the money arrived but a human has to look. */
+    public boolean needsFollowUp() {
+        return isPaid() && failureReason != null && !failureReason.isBlank();
     }
 }

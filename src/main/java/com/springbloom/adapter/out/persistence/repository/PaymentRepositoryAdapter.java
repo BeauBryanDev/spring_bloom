@@ -1,6 +1,7 @@
 package com.springbloom.adapter.out.persistence.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -43,6 +44,13 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
     @Override
     public boolean existsPaidForOrder(Long orderId) {
         return jpaRepository.existsPaid(orderId);
+    }
+
+    @Override
+    public List<Payment> findByOrderId(Long orderId) {
+        return jpaRepository.findByOrderIdOrderByCreatedAtDescIdDesc(orderId).stream()
+                .map(PaymentRepositoryAdapter::toDomain)
+                .toList();
     }
 
     /** paid_at is written here and nowhere else: ck_payment_paid_has_date pairs it with PAID. */

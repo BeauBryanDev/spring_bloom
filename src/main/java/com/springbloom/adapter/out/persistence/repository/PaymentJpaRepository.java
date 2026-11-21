@@ -1,5 +1,6 @@
 package com.springbloom.adapter.out.persistence.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import com.springbloom.adapter.out.persistence.entity.PaymentEntity;
 public interface PaymentJpaRepository extends JpaRepository<PaymentEntity, Long> {
 
     Optional<PaymentEntity> findByProviderSessionId(String providerSessionId);
+
+    List<PaymentEntity> findByOrderIdOrderByCreatedAtDescIdDesc(Long orderId);
 
     @Query(value = "SELECT EXISTS (SELECT 1 FROM payment WHERE order_id = :orderId AND status = 'PAID')",
             nativeQuery = true)
