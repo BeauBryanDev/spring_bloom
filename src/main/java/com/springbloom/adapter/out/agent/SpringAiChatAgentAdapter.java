@@ -6,13 +6,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.anthropic.api.AnthropicApi;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.content.Media;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
 
 import com.springbloom.domain.model.MessageRole;
+import com.springbloom.domain.model.TokenUsage;
 import com.springbloom.domain.model.vo.ImageAttachment;
 import com.springbloom.domain.port.in.CheckAvailabilityUseCase;
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase;
@@ -68,6 +72,7 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
 
     @Override
     public AgentReply reply(AgentRequest request) {
+
         FlorabelleTools tools = new FlorabelleTools(
                                 checkAvailability, 
                                 requestQuotation, 
@@ -80,7 +85,7 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                                 request.sessionKey(), 
                                 request.image());
 
-        String answer = chatClient.prompt()
+        ChatResponse response = chatClient.prompt()
                 .messages(toSpringAi(request.history()))
                 .user(userSpec -> {
                     userSpec.text(request.customerMessage());
@@ -92,17 +97,48 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                 })
                 .tools(tools)
                 .call()
-                .content();
+                .chatResponse();
+
+        String answer = response == null || response.getResult() == null
+                ? null
+                : response.getResult().getOutput().getText();
 
         if (answer == null || answer.isBlank()) {
             log.warn("Session {} got an empty answer from the model", request.sessionKey());
             answer = "Disculpe, no pude procesar su mensaje. Podria repetirlo?";
         }
 
-        return new AgentReply(answer, tools.lastQuotationNumber(), 
+        AgentReply reply = new AgentReply(answer, tools.lastQuotationNumber(),
                                     tools.lastComplaintNumber(),
-                                    tools.lastOrderNumber(), 
+                                    tools.lastOrderNumber(),
                                     tools.lastVision());
+        TokenUsage usage = usageOf(response);
+        return usage == null ? reply : reply.withUsage(usage);
+    }
+
+    /**
+     * Spring AI accumulates usage across the tool round trips of one turn. Cache
+     * counts only exist on Anthropic's own usage object, so they are read from it
+     * when present and are zero otherwise.
+     */
+    private static TokenUsage usageOf(ChatResponse response) {
+        if (response == null || response.getMetadata() == null || response.getMetadata().getUsage() == null) {
+            return null;
+        }
+        Usage usage = response.getMetadata().getUsage();
+        int cacheRead = 0;
+        int cacheWrite = 0;
+        if (usage.getNativeUsage() instanceof AnthropicApi.Usage native_) {
+            cacheRead = native_.cacheReadInputTokens() == null ? 0 : native_.cacheReadInputTokens();
+            cacheWrite = native_.cacheCreationInputTokens() == null ? 0 : native_.cacheCreationInputTokens();
+        }
+        String model = response.getMetadata().getModel();
+        return new TokenUsage(
+                model == null || model.isBlank() ? "unknown" : model,
+                usage.getPromptTokens() == null ? 0 : usage.getPromptTokens(),
+                usage.getCompletionTokens() == null ? 0 : usage.getCompletionTokens(),
+                cacheRead,
+                cacheWrite);
     }
 
     /**
@@ -112,7 +148,7 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
      * good enough here.
      */
     private static Media asMedia(ImageAttachment image) {
-        return new Media(
+        return new Media(  // Spring AI's Media is a record, so we can use the constructor directly.
                 MimeTypeUtils.parseMimeType(image.mimeType()),
                 new ByteArrayResource(image.bytes()));
     }
