@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.springbloom.domain.model.Message;
+import com.springbloom.domain.model.TokenUsage;
 import com.springbloom.domain.model.VisionEvidence;
 import com.springbloom.domain.model.vo.ImageAttachment;
 
@@ -38,7 +39,10 @@ public interface ChatAgentPort {
             history = history == null ? List.of() : List.copyOf(history);
         }
 
-        public AgentRequest(String sessionKey, List<Message> history, String customerMessage) {
+        public AgentRequest(String sessionKey, 
+                            List<Message> history,
+                            String customerMessage) {
+
             this(sessionKey, history, customerMessage, null);
         }
 
@@ -58,8 +62,12 @@ public interface ChatAgentPort {
      words into the domain's terms.
      */
     record AgentReply(
-            String text, String quotationNumber, String complaintNumber, String orderNumber,
-            VisionEvidence vision) {
+            String text, 
+            String quotationNumber, 
+            String complaintNumber, 
+            String orderNumber,
+            VisionEvidence vision, 
+            TokenUsage usage) {
 
         public AgentReply {
             if (text == null || text.isBlank()) {
@@ -67,17 +75,43 @@ public interface ChatAgentPort {
             }
         }
 
-        public AgentReply(String text, String quotationNumber, String complaintNumber,
-                VisionEvidence vision) {
-            this(text, quotationNumber, complaintNumber, null, vision);
+        public AgentReply(String text, 
+                        String quotationNumber, 
+                        String complaintNumber,
+                        String orderNumber,
+                        VisionEvidence vision) {
+
+            this(text, quotationNumber, complaintNumber, orderNumber, vision, null);
         }
 
-        public AgentReply(String text, String quotationNumber, String complaintNumber) {
-            this(text, quotationNumber, complaintNumber, null, null);
+        public AgentReply(String text, 
+                        String quotationNumber, 
+                        String complaintNumber,
+                        VisionEvidence vision) {
+
+            this(text, quotationNumber, complaintNumber, null, vision, null);
+        }
+
+        public AgentReply(String text, 
+                        String quotationNumber, 
+                        String complaintNumber) {
+
+            this(text, quotationNumber, complaintNumber, null, null, null);
         }
 
         public static AgentReply of(String text) {
-            return new AgentReply(text, null, null, null, null);
+            return new AgentReply(text, null, null, null, null, null);
+        }
+
+        public AgentReply withUsage(TokenUsage measured) {
+
+            return new AgentReply(text, quotationNumber, 
+                                    complaintNumber, orderNumber, 
+                                    vision, measured);
+        }
+
+        public Optional<TokenUsage> measuredUsage() {
+            return Optional.ofNullable(usage);
         }
     }
 }
