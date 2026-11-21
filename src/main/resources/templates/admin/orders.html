@@ -56,11 +56,11 @@
                 <td th:text="'$' + ${#numbers.formatDecimal(o.totalAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
                 <td th:text="${#temporals.format(o.createdAt(), 'dd/MM/yyyy HH:mm')}">-</td>
                 <td>
-                    <form method="post" th:if="${o.status().name() == 'CONFIRMED' or o.status().name() == 'PREPARING' or o.status().name() == 'READY_FOR_DISPATCH'}"
+                    <form method="post" th:if="${o.status().canDispatch()}"
                           th:action="@{'/admin/orders/' + ${o.orderNumber()} + '/dispatch'}">
                         <button class="dispatch" type="submit">Despachar</button>
                     </form>
-                    <form method="post" th:if="${o.status().name() == 'DISPATCHED'}"
+                    <form method="post" th:if="${o.status().canDeliver()}"
                           th:action="@{'/admin/orders/' + ${o.orderNumber()} + '/deliver'}">
                         <button class="deliver" type="submit">Marcar entregado</button>
                     </form>

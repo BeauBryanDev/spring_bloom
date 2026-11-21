@@ -66,6 +66,15 @@ florabelle:
     secret-key: ${STRIPE_SECRET_KEY:}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
 
+  agent:
+    # USD por millon de tokens de claude-haiku-4-5. Confirmar contra la pagina de
+    # precios de Anthropic: es una estimacion, tan vigente como estas cifras.
+    pricing:
+      input-per-million: 1.00
+      output-per-million: 5.00
+      cache-read-per-million: 0.10
+      cache-write-per-million: 1.25
+
   knowledge:
     # Medido contra el corpus ingerido: el acierto mas debil puntua 0.386 y la
     # pregunta ajena mejor puntuada, 0.243. Por debajo de este umbral no hay

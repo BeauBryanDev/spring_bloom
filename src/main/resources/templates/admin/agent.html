@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Agente - Panel Admin - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f6f4f2; color: #222; margin: 0; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center;
+                        padding: 1rem 2rem; background: #1c1c1e; color: #fff; }
+        .admin-header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        .admin-header a.active { color: #fff; font-weight: 700; }
+        main { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+        h1 { margin-top: 0; }
+        h2 { font-size: 1rem; margin: 1.75rem 0 0.5rem; color: #444; }
+        .notice { background: #fff4e0; color: #8a5a00; padding: 0.75rem 1rem; border-radius: 8px;
+                  font-size: 0.85rem; margin-bottom: 1.25rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: #efeae6; font-size: 0.8rem; text-transform: uppercase; color: #666; }
+        td.num, th.num { text-align: right; }
+        .bar { background: #e8e1da; border-radius: 4px; height: 0.6rem; min-width: 120px; }
+        .bar span { display: block; background: #2f6fd1; height: 100%; border-radius: 4px; }
+        .empty { color: #999; font-style: italic; padding: 1rem; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-nav :: nav('agent')}"></div>
+
+<main>
+    <h1>Agente: uso de tokens</h1>
+    <p class="notice">
+        Tokens de entrada y salida de cada turno de Florabelle, sumando todas las llamadas al
+        modelo del turno. El costo es una estimacion con las tarifas de la configuracion. Un turno
+        en que el modelo falla no se registra. Los dias son hora de Bogota.
+    </p>
+
+    <table>
+        <thead>
+            <tr><th>Periodo</th><th class="num">Turnos</th><th class="num">Entrada</th><th class="num">Salida</th>
+                <th class="num">Cache (lectura / escritura)</th><th class="num">Promedio / turno</th>
+                <th class="num">Costo estimado (USD)</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${summary.periods()}">
+                <td th:text="${p.label()}">Hoy</td>
+                <td class="num" th:text="${#numbers.formatInteger(p.totals().turns(), 1, 'POINT')}">0</td>
+                <td class="num" th:text="${#numbers.formatInteger(p.totals().inputTokens(), 1, 'POINT')}">0</td>
+                <td class="num" th:text="${#numbers.formatInteger(p.totals().outputTokens(), 1, 'POINT')}">0</td>
+                <td class="num" th:text="${#numbers.formatInteger(p.totals().cacheReadTokens(), 1, 'POINT')} + ' / ' + ${#numbers.formatInteger(p.totals().cacheWriteTokens(), 1, 'POINT')}">0 / 0</td>
+                <td class="num" th:text="${#numbers.formatInteger(p.totals().averageTokensPerTurn(), 1, 'POINT')}">0</td>
+                <td class="num" th:text="'$' + ${#numbers.formatDecimal(p.estimatedUsd(), 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Ultimos 30 dias</h2>
+    <table th:if="${not #lists.isEmpty(summary.daily())}">
+        <thead>
+            <tr><th>Dia</th><th class="num">Turnos</th><th class="num">Entrada</th><th class="num">Salida</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="d : ${summary.daily()}">
+                <td th:text="${#temporals.format(d.day(), 'dd/MM/yyyy')}">-</td>
+                <td class="num" th:text="${d.totals().turns()}">0</td>
+                <td class="num" th:text="${#numbers.formatInteger(d.totals().inputTokens(), 1, 'POINT')}">0</td>
+                <td class="num" th:text="${#numbers.formatInteger(d.totals().outputTokens(), 1, 'POINT')}">0</td>
+                <td>
+                    <div class="bar"><span th:style="'width:' + ${summary.peakDayTokens() == 0 ? 0 : d.totals().totalTokens() * 100 / summary.peakDayTokens()} + '%'"></span></div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty" th:if="${#lists.isEmpty(summary.daily())}">Todavia no hay turnos registrados.</p>
+</main>
+</body>
+</html>
