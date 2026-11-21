@@ -55,12 +55,12 @@ class OrderControllerDetailTest {
     @MockitoBean
     private StoreOwnerRepository owners;
 
-    private AdminOrderDetail sample() {
+    private AdminOrderDetail sample(OrderStatus orderStatus) {
         Instant now = Instant.parse("2026-08-26T15:00:00Z");
         OrderItem item = new OrderItem(ProductType.INDIVIDUAL, null,
                 List.of(new OrderItemSpecies(1L, "Rosa", 3, Money.of("4000"), Money.of("12000"))),
                 Money.of("12000"));
-        FlowerOrder order = new FlowerOrder(10L, ORDER, 5L, 7L, OrderStatus.CONFIRMED, List.of(item),
+        FlowerOrder order = new FlowerOrder(10L, ORDER, 5L, 7L, orderStatus, List.of(item),
                 Money.of("12000"), Money.of("0"), Money.of("12000"), now);
         return new AdminOrderDetail(order,
                 new Customer(7L, "Ana Perez", null, "3001234567", "Calle 1 # 2-3"),
@@ -71,12 +71,30 @@ class OrderControllerDetailTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("an admin sees the order's lines and customer")
     void adminSeesDetail() throws Exception {
-        when(detail.findByNumber(ORDER)).thenReturn(Optional.of(sample()));
+        when(detail.findByNumber(ORDER)).thenReturn(Optional.of(sample(OrderStatus.CONFIRMED)));
 
         mockMvc.perform(get("/admin/orders/" + ORDER))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Ana Perez")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Rosa")));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("the dispatch button follows the state machine")
+    void buttonFollowsState() throws Exception {
+        when(detail.findByNumber(ORDER)).thenReturn(Optional.of(sample(OrderStatus.CONFIRMED)));
+        mockMvc.perform(get("/admin/orders/" + ORDER))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Despachar")));
+
+        when(detail.findByNumber(ORDER)).thenReturn(Optional.of(sample(OrderStatus.PENDING)));
+        mockMvc.perform(get("/admin/orders/" + ORDER))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Despachar"))));
+
+        when(detail.findByNumber(ORDER)).thenReturn(Optional.of(sample(OrderStatus.DELIVERED)));
+        mockMvc.perform(get("/admin/orders/" + ORDER))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Despachar"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Marcar entregado"))));
     }
 
     @Test

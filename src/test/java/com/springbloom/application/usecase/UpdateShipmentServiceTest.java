@@ -66,6 +66,24 @@ class UpdateShipmentServiceTest {
     }
 
     @Test
+    @DisplayName("an order that was never dispatched cannot be marked delivered")
+    void refusesDeliveryBeforeDispatch() {
+        orderIs(OrderStatus.CONFIRMED);
+
+        assertThatThrownBy(() -> service.deliver(ORDER)).isInstanceOf(IllegalArgumentException.class);
+        verify(shipments, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("a delivered order cannot be dispatched again")
+    void refusesRedispatchOfDelivered() {
+        orderIs(OrderStatus.DELIVERED);
+
+        assertThatThrownBy(() -> service.dispatch(ORDER)).isInstanceOf(IllegalArgumentException.class);
+        verify(shipments, never()).save(any());
+    }
+
+    @Test
     @DisplayName("an unpaid order cannot be dispatched")
     void refusesAnUnpaidOrder() {
         orderIs(OrderStatus.PENDING);

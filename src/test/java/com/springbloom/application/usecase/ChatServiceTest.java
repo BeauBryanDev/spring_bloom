@@ -19,7 +19,9 @@ import com.springbloom.domain.port.in.ChatUseCase.ChatTurn;
 import com.springbloom.domain.port.out.ChatAgentPort;
 import com.springbloom.domain.port.out.ChatAgentPort.AgentReply;
 import com.springbloom.domain.port.out.ChatAgentPort.AgentRequest;
+import com.springbloom.domain.port.out.AgentUsageRepository;
 import com.springbloom.domain.port.out.ConversationRepository;
+import com.springbloom.domain.model.TokenUsage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,13 +43,15 @@ class ChatServiceTest {
 
     private ConversationRepository conversations;
     private ChatAgentPort agent;
+    private AgentUsageRepository usage;
     private ChatService service;
 
     @BeforeEach
     void setUp() {
         conversations = mock(ConversationRepository.class);
         agent = mock(ChatAgentPort.class);
-        service = new ChatService(conversations, agent);
+        usage = mock(AgentUsageRepository.class);
+        service = new ChatService(conversations, agent, usage);
 
         when(conversations.findOrStart(SESSION)).thenReturn(
                 new Conversation(CONVERSATION_ID, null, SESSION, List.of(), NOW));
@@ -172,5 +176,36 @@ class ChatServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new ChatCommand(SESSION, "x".repeat(2001)))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("token usage is recorded after the answer is remembered")
+    void recordsUsage() {
+        TokenUsage measured = new TokenUsage("claude-haiku-4-5", 1200, 300, 0, 0);
+        when(agent.reply(any())).thenReturn(AgentReply.of("Con gusto.").withUsage(measured));
+
+        service.say(new ChatCommand(SESSION, "Hola"));
+
+        InOrder order = inOrder(conversations, usage);
+        order.verify(conversations).append(CONVERSATION_ID, MessageRole.ASSISTANT, "Con gusto.");
+        order.verify(usage).record(CONVERSATION_ID, measured, false);
+    }
+
+    @Test
+    @DisplayName("a failing metrics write never costs the customer their answer")
+    void usageFailureIsHarmless() {
+        when(agent.reply(any())).thenReturn(
+                AgentReply.of("Con gusto.").withUsage(new TokenUsage("m", 1, 1, 0, 0)));
+        org.mockito.Mockito.doThrow(new RuntimeException("db down")).when(usage).record(any(), any(), org.mockito.ArgumentMatchers.anyBoolean());
+
+        assertThat(service.say(new ChatCommand(SESSION, "Hola")).reply()).isEqualTo("Con gusto.");
+    }
+
+    @Test
+    @DisplayName("a reply with no measured usage records nothing")
+    void noUsageNoRecord() {
+        service.say(new ChatCommand(SESSION, "Hola"));
+
+        verify(usage, never()).record(any(), any(), org.mockito.ArgumentMatchers.anyBoolean());
     }
 }
