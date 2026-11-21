@@ -14,6 +14,7 @@ import com.springbloom.domain.port.in.ChatUseCase;
 import com.springbloom.domain.port.out.ChatAgentPort;
 import com.springbloom.domain.port.out.ChatAgentPort.AgentReply;
 import com.springbloom.domain.port.out.ChatAgentPort.AgentRequest;
+import com.springbloom.domain.port.out.AgentUsageRepository;
 import com.springbloom.domain.port.out.ConversationRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class ChatService implements ChatUseCase {
 
     private final ConversationRepository conversations;
     private final ChatAgentPort agent;
+    private final AgentUsageRepository usageRepository;
 
     /**
      * Reading history must never start a conversation: a page load is not a
@@ -74,6 +76,7 @@ public class ChatService implements ChatUseCase {
                                                         ));
 
         conversations.append(conversationId, MessageRole.ASSISTANT, reply.text());
+        recordUsage(conversationId, reply, command.attachedImage().isPresent());
 
         log.info("Session {} answered on conversation {}{}{}",
                 command.sessionKey(), conversationId,
@@ -82,8 +85,24 @@ public class ChatService implements ChatUseCase {
                         + (reply.orderNumber() == null ? "" : " with order " + reply.orderNumber())
                 );
 
-        return new ChatTurn(conversationId, reply.text(),
-                reply.quotationNumber(), reply.complaintNumber(), reply.orderNumber(), reply.vision());
+        return new ChatTurn(conversationId, 
+                            reply.text(),
+                            reply.quotationNumber(), 
+                            reply.complaintNumber(),
+                            reply.orderNumber(), 
+                            reply.vision());
+    }
+
+    /** A metrics write must never cost a customer their answer. */
+    private void recordUsage(UUID conversationId, AgentReply reply, boolean hadImage) {
+        reply.measuredUsage().ifPresent(usage -> {
+            try {
+                usageRepository.record(conversationId, usage, hadImage);
+                
+            } catch (RuntimeException failure) {
+                log.warn("Could not record token usage for conversation {}", conversationId, failure);
+            }
+        });
     }
 
     /**

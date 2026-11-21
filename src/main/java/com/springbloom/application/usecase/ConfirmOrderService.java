@@ -89,23 +89,35 @@ public class ConfirmOrderService implements ConfirmOrderUseCase {
         if (!order.status().canTransitionTo(OrderStatus.CONFIRMED)) {
             log.error("Payment {} landed on {} which is {}", payment.paymentReference(),
                     order.orderNumber(), order.status());
-            payments.markPaid(payment.id(), event.paymentIntentId(), NOT_PENDING_NOTE, now);
+            payments.markPaid(payment.id(), 
+                                event.paymentIntentId(), 
+                                NOT_PENDING_NOTE, now);
             return;
         }
 
         try {
             transaction.executeWithoutResult(status -> {
                 takeStock(order);
-                payments.markPaid(payment.id(), event.paymentIntentId(), null, now);
+                payments.markPaid(payment.id(),
+                                    event.paymentIntentId(), 
+                                    null, now);
+
                 orders.updateStatus(order.id(), OrderStatus.CONFIRMED);
             });
-            log.info("{} confirmed by payment {}", order.orderNumber(), payment.paymentReference());
+            log.info("{} confirmed by payment {}", 
+                        order.orderNumber(), 
+                        payment.paymentReference());
 
         } catch (InsufficientStockException shortfall) {
             // The money is real, so it is recorded; the order stays PENDING for a human.
             log.error("{} paid as {} but {} ran short: needs a refund or a restock",
-                    order.orderNumber(), payment.paymentReference(), shortfall.getMessage());
-            payments.markPaid(payment.id(), event.paymentIntentId(), SHORT_STOCK_NOTE, now);
+                    order.orderNumber(), 
+                    payment.paymentReference(), 
+                    shortfall.getMessage());
+
+            payments.markPaid(payment.id(), 
+                                event.paymentIntentId(), 
+                                SHORT_STOCK_NOTE, now);
         }
     }
 
