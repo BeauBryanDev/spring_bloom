@@ -1,6 +1,11 @@
 package com.springbloom.config;
 
 import org.springframework.ai.anthropic.AnthropicChatModel;
+import org.springframework.ai.anthropic.AnthropicChatOptions;
+import org.springframework.ai.anthropic.api.AnthropicCacheOptions;
+import org.springframework.ai.anthropic.api.AnthropicCacheStrategy;
+import org.springframework.ai.anthropic.api.AnthropicCacheTtl;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,9 +28,31 @@ public class SpringAIConfig {
      * disabled.
      */
     @Bean
-    public ChatClient florabelleChatClient(AnthropicChatModel chatModel) {
+    public ChatClient florabelleChatClient(
+            AnthropicChatModel chatModel,
+            @Value("${spring.ai.anthropic.chat.options.model}") String model,
+            @Value("${florabelle.agent.cache.strategy}") String strategy,
+            @Value("${florabelle.agent.cache.ttl}") String ttl) {
+
         return ChatClient.builder(chatModel)
                 .defaultSystem(systemPrompt)
+                .defaultOptions(AnthropicChatOptions.builder()
+                        .model(model)
+                        .cacheOptions(cacheOptions(strategy, ttl))
+                        .build())
+                .build();
+    }
+
+    /** An unknown strategy or TTL fails the boot: a typo must not quietly turn caching off. */
+    static AnthropicCacheOptions cacheOptions(String strategy, String ttl) {
+        AnthropicCacheStrategy chosen = AnthropicCacheStrategy.valueOf(strategy.trim().toUpperCase());
+        AnthropicCacheTtl lifetime = AnthropicCacheTtl.valueOf(ttl.trim().toUpperCase());
+        return AnthropicCacheOptions.builder()
+                .strategy(chosen)
+                .messageTypeTtl(MessageType.SYSTEM, lifetime)
+                .messageTypeTtl(MessageType.USER, lifetime)
+                .messageTypeTtl(MessageType.ASSISTANT, lifetime)
+                .messageTypeTtl(MessageType.TOOL, lifetime)
                 .build();
     }
 }

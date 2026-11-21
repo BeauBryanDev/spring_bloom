@@ -1,14 +1,13 @@
 package com.springbloom.adapter.out.agent;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.anthropic.api.AnthropicApi;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.content.Media;
 import org.springframework.core.io.ByteArrayResource;
@@ -85,7 +84,10 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                                 request.sessionKey(), 
                                 request.image());
 
-        ChatResponse response = chatClient.prompt()
+        TurnUsageCollector.begin();
+        ChatResponse response;
+        try {
+            response = chatClient.prompt()
                 .messages(toSpringAi(request.history()))
                 .user(userSpec -> {
                     userSpec.text(request.customerMessage());
@@ -98,6 +100,11 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                 .tools(tools)
                 .call()
                 .chatResponse();
+        } catch (RuntimeException failure) {
+            TurnUsageCollector.end();
+            throw failure;
+        }
+        Optional<TokenUsage> measured = TurnUsageCollector.end();
 
         String answer = response == null || response.getResult() == null
                 ? null
@@ -112,33 +119,7 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                                     tools.lastComplaintNumber(),
                                     tools.lastOrderNumber(),
                                     tools.lastVision());
-        TokenUsage usage = usageOf(response);
-        return usage == null ? reply : reply.withUsage(usage);
-    }
-
-    /**
-     * Spring AI accumulates usage across the tool round trips of one turn. Cache
-     * counts only exist on Anthropic's own usage object, so they are read from it
-     * when present and are zero otherwise.
-     */
-    private static TokenUsage usageOf(ChatResponse response) {
-        if (response == null || response.getMetadata() == null || response.getMetadata().getUsage() == null) {
-            return null;
-        }
-        Usage usage = response.getMetadata().getUsage();
-        int cacheRead = 0;
-        int cacheWrite = 0;
-        if (usage.getNativeUsage() instanceof AnthropicApi.Usage native_) {
-            cacheRead = native_.cacheReadInputTokens() == null ? 0 : native_.cacheReadInputTokens();
-            cacheWrite = native_.cacheCreationInputTokens() == null ? 0 : native_.cacheCreationInputTokens();
-        }
-        String model = response.getMetadata().getModel();
-        return new TokenUsage(
-                model == null || model.isBlank() ? "unknown" : model,
-                usage.getPromptTokens() == null ? 0 : usage.getPromptTokens(),
-                usage.getCompletionTokens() == null ? 0 : usage.getCompletionTokens(),
-                cacheRead,
-                cacheWrite);
+        return measured.map(reply::withUsage).orElse(reply);
     }
 
     /**
