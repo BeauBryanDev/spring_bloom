@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Detalle de pedido - Panel Admin - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f6f4f2; color: #222; margin: 0; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center;
+                        padding: 1rem 2rem; background: #1c1c1e; color: #fff; }
+        .admin-header a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        .admin-header a.active { color: #fff; font-weight: 700; }
+        main { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+        h1 { margin-top: 0; }
+        h2 { font-size: 1rem; margin: 1.75rem 0 0.5rem; color: #444; }
+        a.back { font-size: 0.85rem; color: #2f6fd1; text-decoration: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+        .card { background: white; border-radius: 10px; padding: 1rem 1.25rem; font-size: 0.9rem; }
+        .card dt { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-top: 0.5rem; }
+        .card dd { margin: 0; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: #efeae6; font-size: 0.8rem; text-transform: uppercase; color: #666; }
+        td.num, th.num { text-align: right; }
+        .muted { color: #999; font-style: italic; }
+        .flash { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.25rem; }
+        .flash.done { background: #e3f4e6; color: #1e6b2e; }
+        .flash.problem { background: #fde8e8; color: #a02424; }
+        .refund { background: #fde8e8; color: #a02424; border: 1px solid #f3b4b4; padding: 0.9rem 1.1rem;
+                  border-radius: 8px; font-size: 0.9rem; margin: 1rem 0; }
+        .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; background: #efeae6;
+                 font-size: 0.75rem; }
+        form { display: inline; margin: 0; }
+        button { border: 0; border-radius: 6px; padding: 0.4rem 0.9rem; cursor: pointer; font-size: 0.85rem; color: #fff; }
+        button.dispatch { background: #2f6fd1; }
+        button.deliver { background: #2e8b57; }
+        .totals { text-align: right; margin-top: 0.5rem; font-size: 0.9rem; }
+        .totals strong { font-size: 1.05rem; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-nav :: nav('orders')}"></div>
+
+<main th:with="o=${detail.order()}, c=${detail.customer()}">
+    <a class="back" th:href="@{/admin/orders}">&larr; Todos los pedidos</a>
+    <h1><span th:text="${o.orderNumber()}">ORD-</span>
+        <span class="badge" th:text="${o.status()}">PENDING</span></h1>
+
+    <p class="flash done" th:if="${done}" th:text="${done}">Hecho</p>
+    <p class="flash problem" th:if="${problem}" th:text="${problem}">Problema</p>
+
+    <div class="refund" th:if="${detail.needsRefund()}">
+        <strong>Requiere reembolso o reposicion.</strong>
+        El pago se recibio pero no habia stock suficiente para confirmar el pedido.
+        No hay reembolso automatico: decida y hagalo desde el panel del proveedor de pagos.
+    </div>
+
+    <div class="grid">
+        <section class="card">
+            <h2 style="margin-top:0">Cliente</h2>
+            <dl>
+                <dt>Nombre</dt><dd th:text="${c.fullName()}">-</dd>
+                <dt>Telefono</dt><dd th:text="${c.phone()}">-</dd>
+                <dt>Correo</dt><dd th:text="${c.email() != null ? c.email() : 'No registrado'}">-</dd>
+                <dt>Direccion de entrega</dt><dd th:text="${c.deliveryAddress()}">-</dd>
+            </dl>
+        </section>
+        <section class="card">
+            <h2 style="margin-top:0">Pedido</h2>
+            <dl>
+                <dt>Creado</dt><dd th:text="${#temporals.format(o.createdAt(), 'dd/MM/yyyy HH:mm')}">-</dd>
+                <dt>Envio</dt>
+                <dd th:if="${detail.shipment().isPresent()}" th:with="s=${detail.shipment().get()}">
+                    <span class="badge" th:text="${s.status()}">PENDING</span>
+                    <span th:if="${s.trackingCode() != null}" th:text="' ' + ${s.trackingCode()}"></span><br/>
+                    <span th:if="${s.dispatchedAt() != null}"
+                          th:text="'Despachado: ' + ${#temporals.format(s.dispatchedAt(), 'dd/MM/yyyy HH:mm')}"></span><br/>
+                    <span th:if="${s.deliveredAt() != null}"
+                          th:text="'Entregado: ' + ${#temporals.format(s.deliveredAt(), 'dd/MM/yyyy HH:mm')}"></span>
+                </dd>
+                <dd th:unless="${detail.shipment().isPresent()}" class="muted">Sin envio todavia</dd>
+            </dl>
+            <form method="post" th:if="${o.status().name() == 'CONFIRMED' or o.status().name() == 'PREPARING' or o.status().name() == 'READY_FOR_DISPATCH'}"
+                  th:action="@{'/admin/orders/' + ${o.orderNumber()} + '/dispatch'}">
+                <input type="hidden" name="from" value="detail"/>
+                <button class="dispatch" type="submit">Despachar</button>
+            </form>
+            <form method="post" th:if="${o.status().name() == 'DISPATCHED'}"
+                  th:action="@{'/admin/orders/' + ${o.orderNumber()} + '/deliver'}">
+                <input type="hidden" name="from" value="detail"/>
+                <button class="deliver" type="submit">Marcar entregado</button>
+            </form>
+        </section>
+    </div>
+
+    <h2>Productos</h2>
+    <table>
+        <thead>
+            <tr><th>Tipo</th><th>Flor</th><th class="num">Cantidad</th><th class="num">Precio unit.</th>
+                <th class="num">Total linea</th><th class="num">Desc.</th><th class="num">Subtotal</th></tr>
+        </thead>
+        <tbody th:each="item : ${o.items()}">
+            <tr th:each="sp, st : ${item.species()}">
+                <td th:text="${st.first} ? ${item.productType()} : ''">INDIVIDUAL</td>
+                <td th:text="${sp.commonNameSnapshot()}">-</td>
+                <td class="num" th:text="${sp.quantity()}">0</td>
+                <td class="num" th:text="'$' + ${#numbers.formatDecimal(sp.unitPriceSnapshot().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
+                <td class="num" th:text="'$' + ${#numbers.formatDecimal(sp.lineTotal().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
+                <td class="num" th:text="${st.first and item.discountPercentage() != null} ? ${item.discountPercentage()} + '%' : ''">-</td>
+                <td class="num" th:text="${st.first} ? '$' + ${#numbers.formatDecimal(item.subtotal().amount(), 0, 'COMMA', 0, 'POINT')} : ''">-</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="totals">
+        Subtotal $<span th:text="${#numbers.formatDecimal(o.subtotal().amount(), 0, 'COMMA', 0, 'POINT')}">0</span>
+        &middot; Descuento $<span th:text="${#numbers.formatDecimal(o.discountAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</span><br/>
+        <strong>Total $<span th:text="${#numbers.formatDecimal(o.totalAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</span> COP</strong>
+    </p>
+
+    <h2>Pagos</h2>
+    <table th:if="${not #lists.isEmpty(detail.payments())}">
+        <thead>
+            <tr><th>Referencia</th><th>Estado</th><th class="num">Monto</th><th>Pagado</th><th>Nota</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${detail.payments()}">
+                <td th:text="${p.paymentReference()}">PAY-</td>
+                <td><span class="badge" th:text="${p.status()}">PENDING</span></td>
+                <td class="num" th:text="'$' + ${#numbers.formatDecimal(p.amount().amount(), 0, 'COMMA', 0, 'POINT')} + ' ' + ${p.currency()}">0</td>
+                <td th:text="${p.paidAt() != null} ? ${#temporals.format(p.paidAt(), 'dd/MM/yyyy HH:mm')} : '-'">-</td>
+                <td th:text="${p.failureReason() != null} ? ${p.failureReason()} : ''">-</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="muted" th:if="${#lists.isEmpty(detail.payments())}">Sin intentos de pago.</p>
+</main>
+</body>
+</html>

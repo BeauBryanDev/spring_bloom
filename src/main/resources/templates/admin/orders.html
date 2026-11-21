@@ -38,7 +38,7 @@
     <p class="notice">
         Un pedido pagado puede despacharse, y uno despachado puede marcarse como
         entregado. La hora de entrega abre la ventana de 24 horas para reclamos.
-        El detalle completo del pedido todavia no esta construido.
+        Abra un pedido para ver sus productos, el cliente y los pagos.
     </p>
 
     <p class="flash done" th:if="${done}" th:text="${done}">Hecho</p>
@@ -50,7 +50,7 @@
         </thead>
         <tbody>
             <tr th:each="o : ${orders}">
-                <td th:text="${o.orderNumber()}">ORD-</td>
+                <td><a th:href="@{'/admin/orders/' + ${o.orderNumber()}}" th:text="${o.orderNumber()}">ORD-</a></td>
                 <td th:text="${o.customerName()}">-</td>
                 <td th:text="${o.status()}">PENDING</td>
                 <td th:text="'$' + ${#numbers.formatDecimal(o.totalAmount().amount(), 0, 'COMMA', 0, 'POINT')}">0</td>
