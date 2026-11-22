@@ -36,4 +36,15 @@ class TokenUsageTest {
         assertThat(UsageTotals.NONE.averageTokensPerTurn()).isZero();
         assertThat(new UsageTotals(2, 100, 50, 0, 0).averageTokensPerTurn()).isEqualTo(75);
     }
+
+    @Test
+    @DisplayName("input served from cache is counted in the hit rate and the total input")
+    void cacheShare() {
+        UsageTotals totals = new UsageTotals(2, 100, 50, 900, 0);
+
+        assertThat(totals.totalInputTokens()).isEqualTo(1000);
+        assertThat(totals.cacheHitPercent()).isEqualTo(90);
+        assertThat(totals.totalTokens()).isEqualTo(1050);
+        assertThat(UsageTotals.NONE.cacheHitPercent()).isZero();
+    }
 }

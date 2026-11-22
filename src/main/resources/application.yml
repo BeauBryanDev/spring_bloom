@@ -67,6 +67,12 @@ florabelle:
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
 
   agent:
+    # Cache de prompt de Anthropic. strategy: NONE, TOOLS_ONLY, SYSTEM_ONLY,
+    # SYSTEM_AND_TOOLS o CONVERSATION_HISTORY. ttl: FIVE_MINUTES o ONE_HOUR; con
+    # ONE_HOUR, cache-write-per-million de abajo debe pasar a 2.00.
+    cache:
+      strategy: ${AGENT_CACHE_STRATEGY:CONVERSATION_HISTORY}
+      ttl: ${AGENT_CACHE_TTL:FIVE_MINUTES}
     # USD por millon de tokens de claude-haiku-4-5. Confirmar contra la pagina de
     # precios de Anthropic: es una estimacion, tan vigente como estas cifras.
     pricing:

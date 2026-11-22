@@ -32,15 +32,16 @@
 <main>
     <h1>Agente: uso de tokens</h1>
     <p class="notice">
-        Tokens de entrada y salida de cada turno de Florabelle, sumando todas las llamadas al
-        modelo del turno. El costo es una estimacion con las tarifas de la configuracion. Un turno
+        Tokens de cada turno de Florabelle, sumando todas las llamadas al modelo del turno.
+        "Entrada (sin cache)" es solo lo que no vino del cache; "Cache %" es la parte de la entrada
+        total servida desde cache. El costo es una estimacion con las tarifas de la configuracion. Un turno
         en que el modelo falla no se registra. Los dias son hora de Bogota.
     </p>
 
     <table>
         <thead>
-            <tr><th>Periodo</th><th class="num">Turnos</th><th class="num">Entrada</th><th class="num">Salida</th>
-                <th class="num">Cache (lectura / escritura)</th><th class="num">Promedio / turno</th>
+            <tr><th>Periodo</th><th class="num">Turnos</th><th class="num">Entrada (sin cache)</th><th class="num">Salida</th>
+                <th class="num">Cache (lectura / escritura)</th><th class="num">Cache %</th><th class="num">Promedio / turno</th>
                 <th class="num">Costo estimado (USD)</th></tr>
         </thead>
         <tbody>
@@ -50,6 +51,7 @@
                 <td class="num" th:text="${#numbers.formatInteger(p.totals().inputTokens(), 1, 'POINT')}">0</td>
                 <td class="num" th:text="${#numbers.formatInteger(p.totals().outputTokens(), 1, 'POINT')}">0</td>
                 <td class="num" th:text="${#numbers.formatInteger(p.totals().cacheReadTokens(), 1, 'POINT')} + ' / ' + ${#numbers.formatInteger(p.totals().cacheWriteTokens(), 1, 'POINT')}">0 / 0</td>
+                <td class="num" th:text="${p.totals().cacheHitPercent()} + '%'">0%</td>
                 <td class="num" th:text="${#numbers.formatInteger(p.totals().averageTokensPerTurn(), 1, 'POINT')}">0</td>
                 <td class="num" th:text="'$' + ${#numbers.formatDecimal(p.estimatedUsd(), 1, 'COMMA', 2, 'POINT')}">$0.00</td>
             </tr>
