@@ -6,6 +6,11 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallback;
+import com.springbloom.config.GuardrailProperties;
+import com.springbloom.domain.service.AgentUnavailableException;
+import java.util.Arrays;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -46,6 +51,7 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
     private final SubmitComplaintUseCase submitComplaint;
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
+    private final GuardrailProperties guardrails;
 
     public SpringAiChatAgentAdapter(
             ChatClient florabelleChatClient,
@@ -56,8 +62,10 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
             LookupOrderUseCase lookupOrder,
             SubmitComplaintUseCase submitComplaint,
             ClassifyFlowerUseCase classifyFlower,
-            KnowledgeSearchPort knowledgeSearch) {
+            KnowledgeSearchPort knowledgeSearch,
+            GuardrailProperties guardrails) {
 
+        this.guardrails = guardrails;
         this.chatClient = florabelleChatClient;
         this.checkAvailability = checkAvailability;
         this.requestQuotation = requestQuotation;
@@ -84,6 +92,11 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                                 request.sessionKey(), 
                                 request.image());
 
+        TurnToolGuard toolGuard = new TurnToolGuard(guardrails.getMaxToolCalls());
+        ToolCallback[] guarded = Arrays.stream(ToolCallbacks.from(tools))
+                .map(callback -> (ToolCallback) new GuardedToolCallback(callback, toolGuard))
+                .toArray(ToolCallback[]::new);
+
         TurnUsageCollector.begin();
         ChatResponse response;
         try {
@@ -97,12 +110,13 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                     // and how many stems are in the picture.
                     request.attachedImage().ifPresent(image -> userSpec.media(asMedia(image)));
                 })
-                .tools(tools)
+                .toolCallbacks(guarded)
                 .call()
                 .chatResponse();
         } catch (RuntimeException failure) {
             TurnUsageCollector.end();
-            throw failure;
+            log.error("Session {} the model call failed", request.sessionKey(), failure);
+            throw new AgentUnavailableException(failure);
         }
         Optional<TokenUsage> measured = TurnUsageCollector.end();
 
@@ -119,6 +133,10 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
                                     tools.lastComplaintNumber(),
                                     tools.lastOrderNumber(),
                                     tools.lastVision());
+        reply = reply.withFacts(toolGuard.facts()
+                .withDocumentNumber(tools.lastQuotationNumber())
+                .withDocumentNumber(tools.lastComplaintNumber())
+                .withDocumentNumber(tools.lastOrderNumber()));
         return measured.map(reply::withUsage).orElse(reply);
     }
 

@@ -45,6 +45,8 @@ import com.springbloom.domain.port.in.RequestQuotationUseCase.RequestQuotationCo
 import com.springbloom.domain.port.in.RequestQuotationUseCase.SpeciesRequest;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
+import com.springbloom.domain.service.AgentUnavailableException;
+import com.springbloom.domain.service.guardrail.GuardrailMessages;
 
 import lombok.RequiredArgsConstructor;
 
@@ -127,6 +129,9 @@ public class ChatController {
 
         private static final String DATA_URL_PREFIX = "data:";
 
+        /** 10 MB of bytes is about 13.4M base64 characters; anything longer is refused undecoded. */
+        private static final int MAX_IMAGE_CHARS = 14_000_000;
+
         /**
          * The attachment, or null when the turn is words only.
          *
@@ -137,6 +142,9 @@ public class ChatController {
         ImageAttachment attachment() {
             if (image == null || image.isBlank()) {
                 return null;
+            }
+            if (image.length() > MAX_IMAGE_CHARS) {
+                throw new IllegalArgumentException("That image is too large");
             }
             String payload = image.trim();
             if (payload.startsWith(DATA_URL_PREFIX)) {
@@ -404,6 +412,13 @@ public class ChatController {
     public UnavailableResponse onUnavailableSpecies(UnavailableSpeciesException e) {
         log.info("Quotation refused for {}: {}", e.getSpeciesKey(), e.getReason());
         return new UnavailableResponse(e.getSpeciesKey(), e.getReason());
+    }
+
+    /** The model or its provider failed. Nothing about the failure reaches the customer. */
+    @ExceptionHandler(AgentUnavailableException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ErrorResponse onAgentUnavailable(AgentUnavailableException e) {
+        return new ErrorResponse(GuardrailMessages.MODEL_UNAVAILABLE);
     }
 
     public record ErrorResponse(String message) {

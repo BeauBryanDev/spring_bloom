@@ -41,7 +41,8 @@ public final class TurnUsageCollector {
         }
         return Optional.of(new TokenUsage(
                 totals.model == null || totals.model.isBlank() ? "unknown" : totals.model,
-                totals.input, totals.output, totals.cacheRead, totals.cacheWrite));
+                totals.input, totals.output, 
+                totals.cacheRead, totals.cacheWrite));
     }
 
     private static final class Totals {
