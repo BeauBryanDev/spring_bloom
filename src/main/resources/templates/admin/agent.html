@@ -76,6 +76,22 @@
         </tbody>
     </table>
     <p class="empty" th:if="${#lists.isEmpty(summary.daily())}">Todavia no hay turnos registrados.</p>
+
+    <h2>Guardrails (ultimos 30 dias)</h2>
+    <table th:if="${not #lists.isEmpty(summary.guardrails())}">
+        <thead>
+            <tr><th>Etapa</th><th>Regla</th><th class="num">Veces</th><th>Ultima</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="g : ${summary.guardrails()}">
+                <td th:text="${g.stage()}">INPUT</td>
+                <td th:text="${g.rule()}">regla</td>
+                <td class="num" th:text="${g.count()}">0</td>
+                <td th:text="${#temporals.format(g.lastAt().atZone(T(java.time.ZoneId).of('America/Bogota')), 'dd/MM/yyyy HH:mm')}">-</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty" th:if="${#lists.isEmpty(summary.guardrails())}">Ningun guardrail se ha activado.</p>
 </main>
 </body>
 </html>
