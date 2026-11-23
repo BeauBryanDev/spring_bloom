@@ -40,7 +40,7 @@ class AgentUsageQueryServiceTest {
         when(usage.dailySince(any())).thenReturn(List.of());
         TokenPricing pricing = new TokenPricing(
                 new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("0.10"), new BigDecimal("1.25"));
-        service = new AgentUsageQueryService(usage, pricing, Clock.fixed(NOW, BOGOTA));
+        service = new AgentUsageQueryService(usage, mock(com.springbloom.domain.port.out.GuardrailEventRepository.class), pricing, Clock.fixed(NOW, BOGOTA));
     }
 
     @Test
