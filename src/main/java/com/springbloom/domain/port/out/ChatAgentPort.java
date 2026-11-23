@@ -7,6 +7,7 @@ import com.springbloom.domain.model.Message;
 import com.springbloom.domain.model.TokenUsage;
 import com.springbloom.domain.model.VisionEvidence;
 import com.springbloom.domain.model.vo.ImageAttachment;
+import com.springbloom.domain.service.guardrail.TurnFacts;
 
 /**
  * The conversational agent, as the domain sees it: history and a customer's
@@ -67,12 +68,24 @@ public interface ChatAgentPort {
             String complaintNumber, 
             String orderNumber,
             VisionEvidence vision, 
-            TokenUsage usage) {
+            TokenUsage usage,
+            TurnFacts facts) {
 
         public AgentReply {
             if (text == null || text.isBlank()) {
                 throw new IllegalArgumentException("The agent must say something");
             }
+            facts = facts == null ? TurnFacts.none() : facts;
+        }
+
+        public AgentReply(String text, 
+                        String quotationNumber, 
+                        String complaintNumber,
+                        String orderNumber,
+                        VisionEvidence vision,
+                        TokenUsage usage) {
+
+            this(text, quotationNumber, complaintNumber, orderNumber, vision, usage, null);
         }
 
         public AgentReply(String text, 
@@ -107,7 +120,14 @@ public interface ChatAgentPort {
 
             return new AgentReply(text, quotationNumber, 
                                     complaintNumber, orderNumber, 
-                                    vision, measured);
+                                    vision, measured, facts);
+        }
+
+        public AgentReply withFacts(TurnFacts known) {
+
+            return new AgentReply(text, quotationNumber,
+                                    complaintNumber, orderNumber,
+                                    vision, usage, known);
         }
 
         public Optional<TokenUsage> measuredUsage() {

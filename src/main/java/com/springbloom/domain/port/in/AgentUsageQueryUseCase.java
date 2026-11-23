@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.springbloom.domain.model.DailyUsage;
+import com.springbloom.domain.model.GuardrailEvent;
 import com.springbloom.domain.model.UsageTotals;
 
 public interface AgentUsageQueryUseCase {
@@ -13,6 +14,11 @@ public interface AgentUsageQueryUseCase {
     record Period(String label, UsageTotals totals, BigDecimal estimatedUsd) {
     }
 
-    record Summary(List<Period> periods, List<DailyUsage> daily, long peakDayTokens) {
+    record Summary(List<Period> periods, List<DailyUsage> daily, long peakDayTokens,
+            List<GuardrailEvent> guardrails) {
+
+        public Summary(List<Period> periods, List<DailyUsage> daily, long peakDayTokens) {
+            this(periods, daily, peakDayTokens, List.of());
+        }
     }
 }
