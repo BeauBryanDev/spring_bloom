@@ -30,12 +30,17 @@ public interface ChatUseCase {
      * carry a photo with no words - dropping a flower on Florabelle is itself
      * the question - so the message is only required when there is no image.
      */
+    java.util.regex.Pattern SESSION_KEY = java.util.regex.Pattern.compile("[A-Za-z0-9_-]{8,64}");
+
     record ChatCommand(String sessionKey, String message, ImageAttachment image) {
 
         public ChatCommand {
 
             if (sessionKey == null || sessionKey.isBlank()) {
                 throw new IllegalArgumentException("A session key is required");
+            }
+            if (!SESSION_KEY.matcher(sessionKey).matches()) {
+                throw new IllegalArgumentException("That session key is not valid");
             }
 
             if (message == null || message.isBlank()) {
@@ -101,8 +106,12 @@ public interface ChatUseCase {
             String orderNumber,
             VisionEvidence vision) {
 
-        public ChatTurn(UUID conversationId, String reply, String quotationNumber,
-                String complaintNumber, VisionEvidence vision) {
+        public ChatTurn(UUID conversationId, 
+                        String reply, 
+                        String quotationNumber,
+                        String complaintNumber, 
+                        VisionEvidence vision) {
+                            
             this(conversationId, reply, quotationNumber, complaintNumber, null, vision);
         }
 

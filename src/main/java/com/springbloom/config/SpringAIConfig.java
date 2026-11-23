@@ -32,12 +32,14 @@ public class SpringAIConfig {
             AnthropicChatModel chatModel,
             @Value("${spring.ai.anthropic.chat.options.model}") String model,
             @Value("${florabelle.agent.cache.strategy}") String strategy,
-            @Value("${florabelle.agent.cache.ttl}") String ttl) {
+            @Value("${florabelle.agent.cache.ttl}") String ttl,
+            GuardrailProperties guardrails) {
 
         return ChatClient.builder(chatModel)
                 .defaultSystem(systemPrompt)
                 .defaultOptions(AnthropicChatOptions.builder()
                         .model(model)
+                        .maxTokens(guardrails.getMaxOutputTokens())
                         .cacheOptions(cacheOptions(strategy, ttl))
                         .build())
                 .build();

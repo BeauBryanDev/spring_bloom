@@ -13,6 +13,7 @@ public record TokenPricing(
     private static final BigDecimal MILLION = BigDecimal.valueOf(1_000_000);
 
     public BigDecimal estimate(UsageTotals usage) {
+        
         return inputPerMillion.multiply(BigDecimal.valueOf(usage.inputTokens()))
                 .add(outputPerMillion.multiply(BigDecimal.valueOf(usage.outputTokens())))
                 .add(cacheReadPerMillion.multiply(BigDecimal.valueOf(usage.cacheReadTokens())))

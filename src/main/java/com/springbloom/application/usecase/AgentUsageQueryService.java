@@ -15,6 +15,7 @@ import com.springbloom.domain.model.TokenPricing;
 import com.springbloom.domain.model.UsageTotals;
 import com.springbloom.domain.port.in.AgentUsageQueryUseCase;
 import com.springbloom.domain.port.out.AgentUsageRepository;
+import com.springbloom.domain.port.out.GuardrailEventRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,7 @@ public class AgentUsageQueryService implements AgentUsageQueryUseCase {
     static final int DAILY_WINDOW_DAYS = 30;
 
     private final AgentUsageRepository usage;
+    private final GuardrailEventRepository guardrailEvents;
     private final TokenPricing pricing;
     private final Clock storeClock;
 
@@ -45,7 +47,8 @@ public class AgentUsageQueryService implements AgentUsageQueryUseCase {
                 .toList();
         long peak = daily.stream().mapToLong(d -> d.totals().totalTokens()).max().orElse(0);
 
-        return new Summary(periods, daily, peak);
+        return new Summary(periods, daily, peak,
+                guardrailEvents.summarySince(startOf(today.minusDays(DAILY_WINDOW_DAYS - 1))));
     }
 
     private Period period(String label, UsageTotals totals) {
