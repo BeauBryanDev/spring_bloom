@@ -32,7 +32,7 @@ public interface ChatUseCase {
      */
     java.util.regex.Pattern SESSION_KEY = java.util.regex.Pattern.compile("[A-Za-z0-9_-]{8,64}");
 
-    record ChatCommand(String sessionKey, String message, ImageAttachment image) {
+    record ChatCommand(String sessionKey, String message, ImageAttachment image, String clientIp) {
 
         public ChatCommand {
 
@@ -56,8 +56,12 @@ public interface ChatUseCase {
             }
         }
 
+        public ChatCommand(String sessionKey, String message, ImageAttachment image) {
+            this(sessionKey, message, image, null);
+        }
+
         public ChatCommand(String sessionKey, String message) {
-            this(sessionKey, message, null);
+            this(sessionKey, message, null, null);
         }
 
         public Optional<ImageAttachment> attachedImage() {

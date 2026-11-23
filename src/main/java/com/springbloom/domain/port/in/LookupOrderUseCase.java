@@ -16,7 +16,7 @@ public interface LookupOrderUseCase {
 
     OrderLookup lookup(LookupOrderCommand command);
 
-    record LookupOrderCommand(String sessionKey, String orderNumber, String phone) {
+    record LookupOrderCommand(String sessionKey, String orderNumber, String phone, String clientIp) {
 
         public LookupOrderCommand {
             if (sessionKey == null || sessionKey.isBlank()) {
@@ -26,6 +26,10 @@ public interface LookupOrderUseCase {
                 throw new IllegalArgumentException("El numero de pedido es obligatorio");
             }
             orderNumber = orderNumber.trim();
+        }
+
+        public LookupOrderCommand(String sessionKey, String orderNumber, String phone) {
+            this(sessionKey, orderNumber, phone, null);
         }
     }
 

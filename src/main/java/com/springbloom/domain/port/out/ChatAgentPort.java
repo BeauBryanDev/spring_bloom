@@ -28,7 +28,8 @@ public interface ChatAgentPort {
             String sessionKey,
             List<Message> history,
             String customerMessage,
-            ImageAttachment image) {
+            ImageAttachment image,
+            String clientIp) {
 
         public AgentRequest {
             if (sessionKey == null || sessionKey.isBlank()) {
@@ -40,11 +41,19 @@ public interface ChatAgentPort {
             history = history == null ? List.of() : List.copyOf(history);
         }
 
+        public AgentRequest(String sessionKey,
+                            List<Message> history,
+                            String customerMessage,
+                            ImageAttachment image) {
+
+            this(sessionKey, history, customerMessage, image, null);
+        }
+
         public AgentRequest(String sessionKey, 
                             List<Message> history,
                             String customerMessage) {
 
-            this(sessionKey, history, customerMessage, null);
+            this(sessionKey, history, customerMessage, null, null);
         }
 
         /** The photo attached to this turn, if the customer sent one. */
