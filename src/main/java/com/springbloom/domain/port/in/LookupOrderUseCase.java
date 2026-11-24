@@ -16,7 +16,10 @@ public interface LookupOrderUseCase {
 
     OrderLookup lookup(LookupOrderCommand command);
 
-    record LookupOrderCommand(String sessionKey, String orderNumber, String phone, String clientIp) {
+    record LookupOrderCommand(String sessionKey,
+            String orderNumber,
+            String phone,
+            String clientIp) {
 
         public LookupOrderCommand {
             if (sessionKey == null || sessionKey.isBlank()) {
@@ -28,7 +31,10 @@ public interface LookupOrderUseCase {
             orderNumber = orderNumber.trim();
         }
 
-        public LookupOrderCommand(String sessionKey, String orderNumber, String phone) {
+        public LookupOrderCommand(String sessionKey,
+                String orderNumber,
+                String phone) {
+
             this(sessionKey, orderNumber, phone, null);
         }
     }
@@ -76,7 +82,8 @@ public interface LookupOrderUseCase {
 
     /**
      * Only what the customer needs to hear. shipmentStatus is null when no shipment
-     * exists yet; deliveredAt and hoursSinceDelivery are null until it is delivered.
+     * exists yet; deliveredAt and hoursSinceDelivery are null until it is
+     * delivered.
      */
     record VerifiedOrder(
             String orderNumber,

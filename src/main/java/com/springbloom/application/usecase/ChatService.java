@@ -91,7 +91,7 @@ public class ChatService implements ChatUseCase {
         conversations.append(conversationId, MessageRole.USER, remembered(command));
 
         AgentReply reply = agent.reply(new AgentRequest(
-                command.sessionKey(), history, command.message(), command.image()
+                command.sessionKey(), history, command.message(), command.image(), command.clientIp()
                                                         ));
 
         String text = reply.text();

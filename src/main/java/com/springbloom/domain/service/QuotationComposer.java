@@ -41,10 +41,13 @@ public class QuotationComposer {
 
     /**
      * @param discountPercentage 0..100 for BOUQUET and GARLAND, null for INDIVIDUAL
-     * @throws UnavailableSpeciesException if any species cannot be sold in the amount asked
+     * @throws UnavailableSpeciesException if any species cannot be sold in the
+     *                                     amount asked
      */
     public QuotationItem composeItem(
-            ProductType productType, BigDecimal discountPercentage, List<Selection> selections) {
+            ProductType productType,
+            BigDecimal discountPercentage,
+            List<Selection> selections) {
 
         if (selections == null || selections.isEmpty()) {
             throw new IllegalArgumentException("A quotation line needs at least one species");
@@ -70,9 +73,14 @@ public class QuotationComposer {
         return new QuotationItem(productType, effectiveDiscount, lines, composedSubtotal, subtotal);
     }
 
-    /** BOUQUET fills a missing discount from the shop's volume policy; nothing else may invent one. */
+    /**
+     * BOUQUET fills a missing discount from the shop's volume policy; nothing else
+     * may invent one.
+     */
     private BigDecimal resolveDiscount(
-            ProductType productType, BigDecimal discountPercentage, List<Selection> selections) {
+            ProductType productType,
+            BigDecimal discountPercentage,
+            List<Selection> selections) {
 
         if (discountPercentage != null || productType != ProductType.BOUQUET) {
             return discountPercentage;

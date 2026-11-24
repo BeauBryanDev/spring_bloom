@@ -50,12 +50,12 @@ public class LookupOrderService implements LookupOrderUseCase {
     private final ConversationRepository conversations;
     private final Clock clock;
 
-    /** Failure times per session. Lives in memory: a restart forgives everyone, which is acceptable. */
+    /** Failure times per session and per IP, so rotating session keys does not reset the lock. Lives in memory: a restart forgives everyone, which is acceptable. */
     private final Map<String, Deque<Instant>> failures = new HashMap<>();
 
     @Override
     public OrderLookup lookup(LookupOrderCommand command) {
-        if (locked(command.sessionKey())) {
+        if (locked(sessionKeyOf(command)) || (ipKeyOf(command) != null && locked(ipKeyOf(command)))) {
             log.warn("Session {} is locked out of order lookups", command.sessionKey());
             return OrderLookup.refused(Outcome.LOCKED);
         }
@@ -69,11 +69,15 @@ public class LookupOrderService implements LookupOrderUseCase {
         Optional<Customer> owner = order.flatMap(found -> customers.findById(found.customerId()));
 
         if (owner.isEmpty() || !ColombianPhone.sameNumber(owner.get().phone(), command.phone())) {
-            recordFailure(command.sessionKey());
+            recordFailure(sessionKeyOf(command));
+            if (ipKeyOf(command) != null) {
+                recordFailure(ipKeyOf(command));
+            }
             return OrderLookup.refused(Outcome.NOT_MATCHED);
         }
 
-        clearFailures(command.sessionKey());
+        // The IP's failures are left to expire: one real order must not reset an attacker's count.
+        clearFailures(sessionKeyOf(command));
 
         conversations.assignCustomer(
                 conversations.findOrStart(command.sessionKey()).id(), owner.get().id());
@@ -117,6 +121,14 @@ public class LookupOrderService implements LookupOrderUseCase {
 
     private static String line(OrderItemSpecies species) {
         return species.quantity() + " x " + species.commonNameSnapshot();
+    }
+
+    private static String sessionKeyOf(LookupOrderCommand command) {
+        return "session:" + command.sessionKey();
+    }
+
+    private static String ipKeyOf(LookupOrderCommand command) {
+        return command.clientIp() == null || command.clientIp().isBlank() ? null : "ip:" + command.clientIp();
     }
 
     private synchronized boolean locked(String sessionKey) {

@@ -21,7 +21,10 @@ public final class RateLimiter {
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
     private volatile Instant lastSweep;
 
-    public RateLimiter(int capacity, double refillPerMinute, int maxKeys, Clock clock) {
+    public RateLimiter(int capacity,
+            double refillPerMinute,
+            int maxKeys,
+            Clock clock) {
 
         if (capacity < 1 || refillPerMinute <= 0 || maxKeys < 1) {
             throw new IllegalArgumentException("capacity, refill and max keys must be positive");
