@@ -611,6 +611,11 @@
                 })
             })
                 .then(function (response) {
+                    if (response.status === 429) {
+                        return response.json().then(function (body) {
+                            throw new Error("RATE_LIMITED:" + (body && body.message ? body.message : ""));
+                        });
+                    }
                     if (!response.ok) {
                         throw new Error("HTTP " + response.status);
                     }
@@ -629,9 +634,12 @@
                         appendOrderLink(bubble, turn.orderNumber);
                     }
                 })
-                .catch(function () {
+                .catch(function (failure) {
                     typingRow.remove();
-                    showError("No pudimos enviar tu mensaje. Intenta de nuevo.");
+                    const limited = failure && failure.message && failure.message.indexOf("RATE_LIMITED:") === 0;
+                    showError(limited && failure.message.length > 13
+                        ? failure.message.substring(13)
+                        : "No pudimos enviar tu mensaje. Intenta de nuevo.");
                 })
                 .then(function () {
                     setPending(false);

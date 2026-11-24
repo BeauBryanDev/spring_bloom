@@ -128,4 +128,39 @@ class LookupOrderServiceTest {
         }
         assertThat(lookup(ORDER, PHONE).outcome()).isEqualTo(Outcome.LOCKED);
     }
+
+    @Test
+    @DisplayName("rotating session keys from one IP does not reset the lock")
+    void locksByIpAcrossSessions() {
+        for (int i = 0; i < 3; i++) {
+            service.lookup(new LookupOrderCommand("rotating-" + i, ORDER, "3009999999", "203.0.113.7"));
+        }
+        when(conversations.findOrStart("fresh-session")).thenReturn(
+                new Conversation(CONVERSATION_ID, null, "fresh-session", List.of(), NOW));
+
+        OrderLookup fromSameIp = service.lookup(
+                new LookupOrderCommand("fresh-session", ORDER, PHONE, "203.0.113.7"));
+        OrderLookup fromOtherIp = service.lookup(
+                new LookupOrderCommand("fresh-session", ORDER, PHONE, "198.51.100.9"));
+
+        assertThat(fromSameIp.outcome()).isEqualTo(Outcome.LOCKED);
+        assertThat(fromOtherIp.isVerified()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a success does not erase the IP's earlier failures")
+    void successKeepsIpFailures() {
+        for (int i = 0; i < 2; i++) {
+            service.lookup(new LookupOrderCommand("a-" + i, ORDER, "3009999999", "203.0.113.7"));
+        }
+        when(conversations.findOrStart("good-one")).thenReturn(
+                new Conversation(CONVERSATION_ID, null, "good-one", List.of(), NOW));
+        assertThat(service.lookup(new LookupOrderCommand("good-one", ORDER, PHONE, "203.0.113.7"))
+                .isVerified()).isTrue();
+
+        service.lookup(new LookupOrderCommand("b", ORDER, "3009999999", "203.0.113.7"));
+
+        assertThat(service.lookup(new LookupOrderCommand("c", ORDER, PHONE, "203.0.113.7")).outcome())
+                .isEqualTo(Outcome.LOCKED);
+    }
 }
