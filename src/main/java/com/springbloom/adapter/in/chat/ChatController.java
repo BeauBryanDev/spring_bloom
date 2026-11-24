@@ -45,12 +45,17 @@ import com.springbloom.domain.port.in.RequestQuotationUseCase.RequestQuotationCo
 import com.springbloom.domain.port.in.RequestQuotationUseCase.SpeciesRequest;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
+import com.springbloom.adapter.in.web.ClientIp;
 import com.springbloom.domain.service.AgentUnavailableException;
+import jakarta.servlet.http.HttpServletRequest;
 import com.springbloom.domain.service.guardrail.GuardrailMessages;
 
 import lombok.RequiredArgsConstructor;
 
-/** Public chat endpoints. Anonymous: callers identify themselves with a session key. */
+/**
+ * Public chat endpoints. Anonymous: callers identify themselves with a session
+ * key.
+ */
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
@@ -67,8 +72,8 @@ public class ChatController {
             @RequestParam("image") MultipartFile image,
             @RequestParam("sessionKey") String sessionKey) {
 
-        Optional<IdentifiedFlower> identified =
-                classifyFlower.identify(new ClassifyFlowerCommand(read(image), sessionKey));
+        Optional<IdentifiedFlower> identified = classifyFlower
+                .identify(new ClassifyFlowerCommand(read(image), sessionKey));
 
         return identified
                 .map(IdentificationResponse::recognized)
@@ -90,9 +95,9 @@ public class ChatController {
      * returns, so a refresh does not lose the conversation.
      */
     @PostMapping(path = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ChatResponse say(@RequestBody ChatRequest request) {
+    public ChatResponse say(@RequestBody ChatRequest request, HttpServletRequest http) {
         ChatTurn turn = chat.say(new ChatCommand(
-                request.sessionKey(), request.message(), request.attachment()));
+                request.sessionKey(), request.message(), request.attachment(), ClientIp.of(http)));
 
         return new ChatResponse(turn.conversationId(), turn.reply(),
                 turn.quotationNumber(), turn.complaintNumber(), turn.orderNumber(),
@@ -129,7 +134,10 @@ public class ChatController {
 
         private static final String DATA_URL_PREFIX = "data:";
 
-        /** 10 MB of bytes is about 13.4M base64 characters; anything longer is refused undecoded. */
+        /**
+         * 10 MB of bytes is about 13.4M base64 characters; anything longer is refused
+         * undecoded.
+         */
         private static final int MAX_IMAGE_CHARS = 14_000_000;
 
         /**
@@ -204,14 +212,15 @@ public class ChatController {
             boolean trusted) {
 
         static VisionBadge of(VisionEvidence evidence) {
-            return evidence == null ? null : new VisionBadge(
-                    evidence.modelName(),
-                    evidence.decidedBy().name(),
-                    evidence.speciesKey(),
-                    evidence.commonName(),
-                    evidence.scientificName(),
-                    evidence.confidencePercent(),
-                    evidence.trusted());
+            return evidence == null ? null
+                    : new VisionBadge(
+                            evidence.modelName(),
+                            evidence.decidedBy().name(),
+                            evidence.speciesKey(),
+                            evidence.commonName(),
+                            evidence.scientificName(),
+                            evidence.confidencePercent(),
+                            evidence.trusted());
         }
     }
 
@@ -263,7 +272,8 @@ public class ChatController {
 
         static IdentificationResponse unrecognized() {
             return new IdentificationResponse(
-                    false, null, null, null, null, null, null, null, false, false, null, null);
+                    false, null, null, null, null, null,
+                    null, null, false, false, null, null);
         }
     }
 
@@ -284,7 +294,9 @@ public class ChatController {
         }
     }
 
-    /** discountPercentage is null for INDIVIDUAL and required for BOUQUET/GARLAND. */
+    /**
+     * discountPercentage is null for INDIVIDUAL and required for BOUQUET/GARLAND.
+     */
     public record LineBody(
             ProductType productType,
             BigDecimal discountPercentage,
@@ -310,7 +322,10 @@ public class ChatController {
         }
     }
 
-    /** Money goes out as plain strings: a JSON number would reintroduce binary floats. */
+    /**
+     * Money goes out as plain strings: a JSON number would reintroduce binary
+     * floats.
+     */
     public record QuotationResponse(
             Long id,
             String quotationNumber,
@@ -414,7 +429,10 @@ public class ChatController {
         return new UnavailableResponse(e.getSpeciesKey(), e.getReason());
     }
 
-    /** The model or its provider failed. Nothing about the failure reaches the customer. */
+    /**
+     * The model or its provider failed. Nothing about the failure reaches the
+     * customer.
+     */
     @ExceptionHandler(AgentUnavailableException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ErrorResponse onAgentUnavailable(AgentUnavailableException e) {

@@ -44,7 +44,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimiter history;
     private final ConcurrentHashMap<String, Instant> lastAudit = new ConcurrentHashMap<>();
 
-    public RateLimitFilter(RateLimitProperties properties, GuardrailEventRepository events, Clock storeClock) {
+    public RateLimitFilter(RateLimitProperties properties,
+            GuardrailEventRepository events,
+            Clock storeClock) {
+
         this.properties = properties;
         this.events = events;
         this.clock = storeClock;
@@ -56,7 +59,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private RateLimiter limiter(Rule rule) {
-        return new RateLimiter(rule.getCapacity(), rule.getRefillPerMinute(), properties.getMaxKeys(), clock);
+        return new RateLimiter(rule.getCapacity(),
+                rule.getRefillPerMinute(),
+                properties.getMaxKeys(),
+                clock);
     }
 
     @Override
@@ -65,7 +71,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain)
             throws ServletException, IOException {
 
         String ip = ClientIp.of(request);

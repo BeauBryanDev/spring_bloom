@@ -72,6 +72,7 @@ public class FlorabelleTools {
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
     private final String sessionKey;
+    private final String clientIp;
 
     /**
      * The photo attached to this turn, or null. Like the session key it is bound
@@ -107,7 +108,8 @@ public class FlorabelleTools {
             ClassifyFlowerUseCase classifyFlower,
             KnowledgeSearchPort knowledgeSearch,
             String sessionKey,
-            ImageAttachment image) {
+            ImageAttachment image,
+            String clientIp) {
 
         this.checkAvailability = checkAvailability;
         this.requestQuotation = requestQuotation;
@@ -119,6 +121,7 @@ public class FlorabelleTools {
         this.knowledgeSearch = knowledgeSearch;
         this.sessionKey = sessionKey;
         this.image = image;
+        this.clientIp = clientIp;
     }
 
     public String lastQuotationNumber() {
@@ -251,7 +254,7 @@ public class FlorabelleTools {
 
         try {
             OrderLookup result = lookupOrder.lookup(
-                    new LookupOrderCommand(sessionKey, orderNumber, phone));
+                    new LookupOrderCommand(sessionKey, orderNumber, phone, clientIp));
 
             if (!result.isVerified()) {
                 return OrderLookupAnswer.refused(result.outcome().reason());

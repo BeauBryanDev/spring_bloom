@@ -18,10 +18,12 @@ public class RateLimitConfig {
 
     @Bean
     FilterRegistrationBean<RateLimitFilter> rateLimitFilter(
-            RateLimitProperties properties, GuardrailEventRepository events, Clock storeClock) {
+            RateLimitProperties properties,
+            GuardrailEventRepository events,
+            Clock storeClock) {
 
-        FilterRegistrationBean<RateLimitFilter> registration =
-                new FilterRegistrationBean<>(new RateLimitFilter(properties, events, storeClock));
+        FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(
+                new RateLimitFilter(properties, events, storeClock));
         registration.addUrlPatterns("/api/chat/*");
         return registration;
     }

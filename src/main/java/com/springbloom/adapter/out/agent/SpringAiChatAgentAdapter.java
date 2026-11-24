@@ -81,16 +81,17 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
     public AgentReply reply(AgentRequest request) {
 
         FlorabelleTools tools = new FlorabelleTools(
-                                checkAvailability, 
-                                requestQuotation, 
-                                fileComplaint, 
-                                placeOrder, 
-                                lookupOrder,
-                                submitComplaint, 
-                                classifyFlower, 
-                                knowledgeSearch, 
-                                request.sessionKey(), 
-                                request.image());
+                checkAvailability,
+                requestQuotation,
+                fileComplaint,
+                placeOrder,
+                lookupOrder,
+                submitComplaint,
+                classifyFlower,
+                knowledgeSearch,
+                request.sessionKey(),
+                request.image(),
+                request.clientIp());
 
         TurnToolGuard toolGuard = new TurnToolGuard(guardrails.getMaxToolCalls());
         ToolCallback[] guarded = Arrays.stream(ToolCallbacks.from(tools))
@@ -101,18 +102,18 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
         ChatResponse response;
         try {
             response = chatClient.prompt()
-                .messages(toSpringAi(request.history()))
-                .user(userSpec -> {
-                    userSpec.text(request.customerMessage());
-                    // The model sees the photo itself as well as having the tool
-                    // over it: the ONNX model is the authority on which species
-                    // it is, but only Claude can read the occasion, the colours
-                    // and how many stems are in the picture.
-                    request.attachedImage().ifPresent(image -> userSpec.media(asMedia(image)));
-                })
-                .toolCallbacks(guarded)
-                .call()
-                .chatResponse();
+                    .messages(toSpringAi(request.history()))
+                    .user(userSpec -> {
+                        userSpec.text(request.customerMessage());
+                        // The model sees the photo itself as well as having the tool
+                        // over it: the ONNX model is the authority on which species
+                        // it is, but only Claude can read the occasion, the colours
+                        // and how many stems are in the picture.
+                        request.attachedImage().ifPresent(image -> userSpec.media(asMedia(image)));
+                    })
+                    .toolCallbacks(guarded)
+                    .call()
+                    .chatResponse();
         } catch (RuntimeException failure) {
             TurnUsageCollector.end();
             log.error("Session {} the model call failed", request.sessionKey(), failure);
@@ -130,13 +131,14 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
         }
 
         AgentReply reply = new AgentReply(answer, tools.lastQuotationNumber(),
-                                    tools.lastComplaintNumber(),
-                                    tools.lastOrderNumber(),
-                                    tools.lastVision());
+                tools.lastComplaintNumber(),
+                tools.lastOrderNumber(),
+                tools.lastVision());
         reply = reply.withFacts(toolGuard.facts()
                 .withDocumentNumber(tools.lastQuotationNumber())
                 .withDocumentNumber(tools.lastComplaintNumber())
                 .withDocumentNumber(tools.lastOrderNumber()));
+
         return measured.map(reply::withUsage).orElse(reply);
     }
 
@@ -147,7 +149,7 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
      * good enough here.
      */
     private static Media asMedia(ImageAttachment image) {
-        return new Media(  // Spring AI's Media is a record, so we can use the constructor directly.
+        return new Media( // Spring AI's Media is a record, so we can use the constructor directly.
                 MimeTypeUtils.parseMimeType(image.mimeType()),
                 new ByteArrayResource(image.bytes()));
     }
@@ -160,11 +162,11 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
             List<com.springbloom.domain.model.Message> history) {
 
         return history.stream()
-                .filter(message -> message.role() != MessageRole.SYSTEM)
-                .<org.springframework.ai.chat.messages.Message>map(message ->
-                        message.role() == MessageRole.USER
-                                ? new UserMessage(message.content())
-                                : new AssistantMessage(message.content()))
+                .filter(message -> message
+                        .role() != MessageRole.SYSTEM).<org.springframework.ai.chat.messages.Message>map(
+                                message -> message.role() == MessageRole.USER
+                                        ? new UserMessage(message.content())
+                                        : new AssistantMessage(message.content()))
                 .toList();
     }
 }

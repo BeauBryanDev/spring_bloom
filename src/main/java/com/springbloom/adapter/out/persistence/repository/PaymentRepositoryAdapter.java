@@ -25,7 +25,9 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
     @Override
     @Transactional
     public Payment save(Payment payment) {
+
         PaymentEntity entity = new PaymentEntity();
+
         entity.setPaymentReference(payment.paymentReference());
         entity.setOrderId(payment.orderId());
         entity.setProviderSessionId(payment.providerSessionId());
@@ -38,16 +40,19 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
     @Override
     public Optional<Payment> findBySessionId(String providerSessionId) {
+        
         return jpaRepository.findByProviderSessionId(providerSessionId).map(PaymentRepositoryAdapter::toDomain);
     }
 
     @Override
     public boolean existsPaidForOrder(Long orderId) {
+
         return jpaRepository.existsPaid(orderId);
     }
 
     @Override
     public List<Payment> findByOrderId(Long orderId) {
+
         return jpaRepository.findByOrderIdOrderByCreatedAtDescIdDesc(orderId).stream()
                 .map(PaymentRepositoryAdapter::toDomain)
                 .toList();
@@ -56,12 +61,17 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
     /** paid_at is written here and nowhere else: ck_payment_paid_has_date pairs it with PAID. */
     @Override
     @Transactional
-    public Payment markPaid(Long paymentId, String paymentIntent, String note, Instant paidAt) {
+    public Payment markPaid(Long paymentId, 
+        String paymentIntent, 
+        String note, 
+        Instant paidAt) {
+
         PaymentEntity entity = load(paymentId);
         entity.setStatus(PaymentStatus.PAID);
         entity.setProviderPaymentIntent(paymentIntent);
         entity.setFailureReason(note);
         entity.setPaidAt(paidAt);
+        
         return toDomain(jpaRepository.saveAndFlush(entity));
     }
 
