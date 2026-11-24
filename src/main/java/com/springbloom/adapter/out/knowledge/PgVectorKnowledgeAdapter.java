@@ -82,13 +82,16 @@ public class PgVectorKnowledgeAdapter implements KnowledgeSearchPort {
     }
 
     private static KnowledgePassage toPassage(Document document) {
-        Object title = document.getMetadata().get("title");
+        String storedTitle = Objects.toString(document.getMetadata().get("title"), "");
+        String title = KnowledgeSource.byKey(Objects.toString(document.getMetadata().get("source"), null))
+                .map(KnowledgeSource::citationTitle)
+                .orElse(storedTitle);
         Object section = document.getMetadata().get("section");
         Double score = document.getScore();
 
         return new KnowledgePassage(
                 Objects.toString(document.getText(), ""),
-                Objects.toString(title, ""),
+                title,
                 Objects.toString(section, ""),
                 score == null ? 0.0 : score);
     }

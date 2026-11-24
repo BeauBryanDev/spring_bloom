@@ -1,5 +1,7 @@
 package com.springbloom.adapter.out.knowledge;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -44,6 +46,15 @@ public enum KnowledgeSource {
 
     public String title() {
         return title;
+    }
+
+    /** The document a customer is told an answer came from: captions cite the book they belong to. */
+    public String citationTitle() {
+        return this == BOTANY_FIGURES ? BOTANY_BOOK.title : title;
+    }
+
+    public static Optional<KnowledgeSource> byKey(String key) {
+        return Arrays.stream(values()).filter(source -> source.key.equals(key)).findFirst();
     }
 
     public String resourcePath() {

@@ -145,10 +145,8 @@ public class FlorabelleTools {
             whether they can be sold right now. Call this before ever mentioning a price. \
             Accepts what the customer typed, in Spanish, such as "rosas" or "claveles".""")
     public AvailabilityAnswer findFlowers(
-            @ToolParam(description = "The flower the customer named, in their own words")
-            String flowerName,
-            @ToolParam(required = false, description = "How many stems they asked about, if they said")
-            Integer quantity) {
+            @ToolParam(description = "The flower the customer named, in their own words") String flowerName,
+            @ToolParam(required = false, description = "How many stems they asked about, if they said") Integer quantity) {
 
         List<FlowerOption> options = checkAvailability
                 .check(new CheckAvailabilityCommand(flowerName, quantity, MAX_ALTERNATIVES))
@@ -165,8 +163,7 @@ public class FlorabelleTools {
             quotation number and total. Only call this once the customer has agreed on \
             the flower and how many stems they want.""")
     public QuotationAnswer quoteSingleFlower(
-            @ToolParam(description = "The flower to quote, as findFlowers reported it")
-            String flowerName,
+            @ToolParam(description = "The flower to quote, as findFlowers reported it") String flowerName,
             @ToolParam(description = "How many stems") int quantity) {
 
         return quoting(() -> List.of(new LineRequest(ProductType.INDIVIDUAL, null,
@@ -187,15 +184,13 @@ public class FlorabelleTools {
             the customer what discount they want, and never offer one yourself. The \
             answer tells you the percentage that was applied.""")
     public QuotationAnswer quoteBouquet(
-            @ToolParam(description = "Each flower in the bouquet and how many stems of it")
-            List<BouquetLine> flowers) {
+            @ToolParam(description = "Each flower in the bouquet and how many stems of it") List<BouquetLine> flowers) {
 
         return quoting(() -> List.of(new LineRequest(ProductType.BOUQUET, null,
                 flowers.stream()
                         .map(line -> new SpeciesRequest(resolveKey(line.flowerName()), line.quantity()))
                         .toList())));
     }
-
 
     @Tool(description = """
             Identify the flower in the photo the customer just attached to this \
@@ -247,10 +242,8 @@ public class FlorabelleTools {
             still inside the 24-hour report window. If verified is false, relay the problem \
             exactly and never hint at which of the two data was wrong.""")
     public OrderLookupAnswer lookupOrder(
-            @ToolParam(description = "The ORD-... order number the customer gave")
-            String orderNumber,
-            @ToolParam(description = "The customer's mobile phone, 10 digits, as they wrote it")
-            String phone) {
+            @ToolParam(description = "The ORD-... order number the customer gave") String orderNumber,
+            @ToolParam(description = "The customer's mobile phone, 10 digits, as they wrote it") String phone) {
 
         try {
             OrderLookup result = lookupOrder.lookup(
@@ -274,13 +267,10 @@ public class FlorabelleTools {
             order was not verified, or when it has not been delivered yet and the claim is \
             about its condition.""")
     public SubmitComplaintAnswer submitComplaint(
-            @ToolParam(description = "The ORD-... number lookupOrder verified")
-            String orderNumber,
+            @ToolParam(description = "The ORD-... number lookupOrder verified") String orderNumber,
             @ToolParam(description = "What went wrong: DAMAGED_FLOWERS, LATE_DELIVERY, "
-                    + "NOT_DELIVERED, WRONG_ITEM or OTHER")
-            ComplaintType type,
-            @ToolParam(description = "What the customer described, in their own words, in Spanish")
-            String description) {
+                    + "NOT_DELIVERED, WRONG_ITEM or OTHER") ComplaintType type,
+            @ToolParam(description = "What the customer described, in their own words, in Spanish") String description) {
 
         try {
             SubmitResult result = submitComplaint.submit(
@@ -309,10 +299,8 @@ public class FlorabelleTools {
             customer has their order number and phone.""")
     public ComplaintAnswer fileComplaint(
             @ToolParam(description = "What went wrong: DAMAGED_FLOWERS, LATE_DELIVERY, "
-                    + "NOT_DELIVERED, WRONG_ITEM or OTHER")
-            ComplaintType type,
-            @ToolParam(description = "What the customer described, in their own words, in Spanish")
-            String description) {
+                    + "NOT_DELIVERED, WRONG_ITEM or OTHER") ComplaintType type,
+            @ToolParam(description = "What the customer described, in their own words, in Spanish") String description) {
 
         try {
             Complaint filed = fileComplaint.file(
@@ -339,16 +327,11 @@ public class FlorabelleTools {
             customer pays afterwards on the shop's website, using the order number. Calling \
             it twice for the same quotation returns the same order.""")
     public OrderAnswer placeOrder(
-            @ToolParam(description = "The COT-... number the quotation tool returned")
-            String quotationNumber,
-            @ToolParam(description = "The customer's full name")
-            String fullName,
-            @ToolParam(description = "The customer's phone number")
-            String phone,
-            @ToolParam(description = "Where the flowers are to be delivered")
-            String deliveryAddress,
-            @ToolParam(required = false, description = "Their email, only if they offered it")
-            String email) {
+            @ToolParam(description = "The COT-... number the quotation tool returned") String quotationNumber,
+            @ToolParam(description = "The customer's full name") String fullName,
+            @ToolParam(description = "The customer's phone number") String phone,
+            @ToolParam(description = "Where the flowers are to be delivered") String deliveryAddress,
+            @ToolParam(required = false, description = "Their email, only if they offered it") String email) {
 
         try {
             FlowerOrder order = placeOrder.place(new PlaceOrderCommand(
@@ -381,8 +364,7 @@ public class FlorabelleTools {
             memory. If it returns nothing, say you will check with the team rather than \
             inventing a policy.""")
     public KnowledgeAnswer searchPolicy(
-            @ToolParam(description = "The customer's question, in Spanish, in their own words")
-            String question) {
+            @ToolParam(description = "The customer's question, in Spanish, in their own words") String question) {
 
         return answering(question, Scope.COMMERCIAL);
     }
@@ -393,8 +375,7 @@ public class FlorabelleTools {
             only for questions about botany itself. It knows nothing about prices, stock \
             or shop policy - use searchPolicy or findFlowers for those.""")
     public KnowledgeAnswer explainBotany(
-            @ToolParam(description = "The botanical question, in Spanish")
-            String question) {
+            @ToolParam(description = "The botanical question, in Spanish") String question) {
 
         return answering(question, Scope.BOTANICAL);
     }
@@ -470,8 +451,14 @@ public class FlorabelleTools {
                 .orElseThrow(() -> new UnknownSpeciesException(flowerName));
     }
 
-    /** totalCop is the order's total as a plain string, or null when it was not placed. */
-    public record OrderAnswer(boolean placed, String orderNumber, String totalCop, String problem) {
+    /**
+     * totalCop is the order's total as a plain string, or null when it was not
+     * placed.
+     */
+    public record OrderAnswer(boolean placed,
+            String orderNumber,
+            String totalCop,
+            String problem) {
     }
 
     /**
@@ -514,7 +501,10 @@ public class FlorabelleTools {
         }
     }
 
-    /** alreadyRegistered is true when an open claim of the same type already existed. */
+    /**
+     * alreadyRegistered is true when an open claim of the same type already
+     * existed.
+     */
     public record SubmitComplaintAnswer(
             boolean filed,
             boolean alreadyRegistered,
@@ -528,9 +518,9 @@ public class FlorabelleTools {
         }
 
         static SubmitComplaintAnswer of(Complaint complaint, boolean alreadyRegistered) {
-            return new SubmitComplaintAnswer(true, alreadyRegistered, 
+            return new SubmitComplaintAnswer(true, alreadyRegistered,
                     complaint.complaintNumber(),
-                    complaint.type().label(), 
+                    complaint.type().label(),
                     complaint.status().label(), null);
         }
     }
@@ -542,10 +532,25 @@ public class FlorabelleTools {
     public record KnowledgeAnswer(boolean found, List<Passage> passages) {
     }
 
-    public record Passage(String text, String fromDocument, String section) {
+    /**
+     * cite is the finished citation, so the model copies a source rather than
+     * composing one.
+     */
+    public record Passage(String text, String cite) {
 
         static Passage of(KnowledgePassage passage) {
-            return new Passage(passage.content(), passage.documentTitle(), passage.section());
+            return new Passage(passage.content(),
+                    citation(passage.documentTitle(),
+                            passage.section()));
+        }
+
+        static String citation(String document, String section) {
+            String title = document == null ? "" : document.strip();
+            String part = section == null ? "" : section.strip();
+            if (part.isEmpty()) {
+                return title;
+            }
+            return title.isEmpty() ? part : title + ", " + part;
         }
     }
 
@@ -554,7 +559,9 @@ public class FlorabelleTools {
             @ToolParam(description = "How many stems of it") int quantity) {
     }
 
-    public record AvailabilityAnswer(String searchedFor, boolean nothingFound, List<FlowerOption> options) {
+    public record AvailabilityAnswer(String searchedFor,
+            boolean nothingFound,
+            List<FlowerOption> options) {
     }
 
     /**
@@ -615,7 +622,10 @@ public class FlorabelleTools {
             Integer etaDays,
             String problem) {
 
-        /** Named in the payload so the agent never presents the species as its own guess. */
+        /**
+         * Named in the payload so the agent never presents the species as its own
+         * guess.
+         */
         private static final String TRAINED_MODEL = "Modelo YOLOv11s-seg entrenado por Springbloom";
 
         static PhotoAnswer identified(IdentifiedFlower flower) {
@@ -689,7 +699,10 @@ public class FlorabelleTools {
                     null, null);
         }
 
-        /** The percentage on the first discounted line, or null when nothing was discounted. */
+        /**
+         * The percentage on the first discounted line, or null when nothing was
+         * discounted.
+         */
         private static String appliedDiscount(Quotation quotation) {
             return quotation.items().stream()
                     .map(QuotationItem::discountPercentage)
@@ -701,7 +714,7 @@ public class FlorabelleTools {
 
         static QuotationAnswer refused(String speciesKey, String reason) {
             return new QuotationAnswer(
-                    false, null, null, null, null, null, null, 
+                    false, null, null, null, null, null, null,
                     speciesKey, reason);
         }
     }
