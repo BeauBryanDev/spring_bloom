@@ -3,7 +3,7 @@ package com.springbloom.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-/** Per-IP limits on the public chat endpoints, under florabelle.rate-limit. */
+/** Per-IP limits on the public chat endpoints and the cart checkout, under florabelle.rate-limit. */
 @Component
 @ConfigurationProperties(prefix = "florabelle.rate-limit")
 public class RateLimitProperties {
@@ -15,6 +15,8 @@ public class RateLimitProperties {
     private Rule vision = new Rule(20, 20);
     private Rule quotations = new Rule(20, 20);
     private Rule history = new Rule(60, 60);
+    /** Each checkout writes a customer, a quotation, an order and a Stripe session. */
+    private Rule checkout = new Rule(5, 2);
 
     public static class Rule {
 
@@ -49,4 +51,6 @@ public class RateLimitProperties {
     public void setQuotations(Rule quotations) { this.quotations = quotations; }
     public Rule getHistory() { return history; }
     public void setHistory(Rule history) { this.history = history; }
+    public Rule getCheckout() { return checkout; }
+    public void setCheckout(Rule checkout) { this.checkout = checkout; }
 }

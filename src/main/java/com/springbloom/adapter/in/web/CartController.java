@@ -3,8 +3,14 @@ package com.springbloom.adapter.in.web;
 import com.springbloom.adapter.in.web.CartPricing.CartLineView;
 import com.springbloom.adapter.in.web.CartPricing.CartView;
 import com.springbloom.domain.model.Cart;
+import com.springbloom.domain.port.in.CheckoutCartUseCase;
+import com.springbloom.domain.port.in.CheckoutCartUseCase.CartCheckout;
+import com.springbloom.domain.port.in.CheckoutCartUseCase.CheckoutCartCommand;
+import com.springbloom.domain.service.UnavailableSpeciesException;
+import com.springbloom.domain.service.UnknownSpeciesException;
 import com.springbloom.domain.port.in.ListCatalogUseCase;
 import com.springbloom.domain.port.in.ListCatalogUseCase.CatalogEntry;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +28,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The cart page and the small API behind the cart buttons.
@@ -39,11 +46,17 @@ public class CartController {
     private final CartSession session;
     private final CartPricing pricing;
     private final ListCatalogUseCase listCatalog;
+    private final CheckoutCartUseCase checkoutCart;
 
-    public CartController(CartSession session, CartPricing pricing, ListCatalogUseCase listCatalog) {
+    public CartController(CartSession session, 
+                            CartPricing pricing, 
+                            ListCatalogUseCase listCatalog,
+                            CheckoutCartUseCase checkoutCart) {
+
         this.session = session;
         this.pricing = pricing;
         this.listCatalog = listCatalog;
+        this.checkoutCart = checkoutCart;
     }
 
     @GetMapping("/carrito")
@@ -91,7 +104,8 @@ public class CartController {
     @PutMapping("/api/cart/items/{speciesKey}")
     @ResponseBody
     public ResponseEntity<CartState> update(
-            @PathVariable String speciesKey, @RequestBody CartItemRequest request) {
+            @PathVariable String speciesKey, 
+            @RequestBody CartItemRequest request) {
         return apply(() -> {
             if (request.quantityOrZero() > 0) {
                 requireSellable(speciesKey);
@@ -112,6 +126,75 @@ public class CartController {
         return apply(() -> session.cart().clear());
     }
 
+    /**
+     * Turns the session's cart into a quotation and an order and answers with the
+     * Stripe URL. The browser sends only who and where: the flowers come from the
+     * session and every price from flower_stock.
+     *
+     * Locked on the Cart instance, not on the session proxy (which is a singleton
+     * shared by every visitor), so a double click cannot place two orders. The cart
+     * is emptied once the order exists, even if Stripe then fails: the order can be
+     * paid later from "Ya tengo un pedido".
+     */
+    @PostMapping("/api/cart/checkout")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> checkout(@RequestBody CheckoutRequest request) {
+        Cart cart = session.cart();
+        synchronized (cart) {
+            CartView view = pricing.price(cart);
+            if (view.isEmpty()) {
+                return problem(HttpStatus.BAD_REQUEST, "Su carrito esta vacio");
+            }
+            if (view.anyUnavailable()) {
+                return problem(HttpStatus.CONFLICT,
+                        "Quite del carrito las flores que no estan a la venta antes de pagar");
+            }
+            try {
+                CartCheckout placed = checkoutCart.checkout(new CheckoutCartCommand(
+                        cart.lines().stream()
+                                .map(line -> new CheckoutCartUseCase.CartLine(line.speciesKey(), 
+                                                                            line.quantity()))
+                                .toList(),
+                        request.fullName(), request.phone(), request.deliveryAddress(), request.email()));
+                cart.clear();
+                return ResponseEntity.ok(placedBody(placed));
+            } catch (UnavailableSpeciesException unavailable) {
+                return problem(HttpStatus.CONFLICT,
+                        nameOf(view, unavailable.getSpeciesKey()) + ": " + unavailable.getReason());
+            } catch (UnknownSpeciesException unknown) {
+                return problem(HttpStatus.CONFLICT, "Una de las flores ya no esta en el catalogo");
+            } catch (IllegalArgumentException invalid) {
+                return problem(HttpStatus.BAD_REQUEST, invalid.getMessage());
+            }
+        }
+    }
+
+    private static Map<String, String> placedBody(CartCheckout placed) {
+        Map<String, String> body = new java.util.LinkedHashMap<>();
+        body.put("orderNumber", placed.orderNumber());
+        body.put("quotationNumber", placed.quotationNumber());
+        if (placed.paymentUrl() != null) {
+            body.put("url", placed.paymentUrl());
+        }
+        if (placed.paymentProblem() != null) {
+            body.put("message", placed.paymentProblem());
+        }
+        return body;
+    }
+
+    private static String nameOf(CartView view, String speciesKey) {
+        return view.lines().stream()
+                .filter(line -> line.speciesKey().equals(speciesKey))
+                .map(CartLineView::commonName)
+                .findFirst()
+                .orElse(speciesKey);
+    }
+
+    private static ResponseEntity<Map<String, String>> problem(HttpStatus status, String message) {
+
+        return ResponseEntity.status(status).body(Map.of("message", message));
+    }
+
     @GetMapping("/api/cart")
     @ResponseBody
     public CartState state() {
@@ -127,6 +210,7 @@ public class CartController {
         try {
             mutation.run();
             return ResponseEntity.ok(state(null));
+
         } catch (IllegalArgumentException | IllegalStateException rejected) {
             return ResponseEntity.badRequest().body(state(rejected.getMessage()));
         }
@@ -134,6 +218,7 @@ public class CartController {
 
     private CartState state(String problem) {
         CartView view = pricing.price(session.cart());
+
         return new CartState(
                 view.lines().size(),
                 view.totalStems(),
@@ -191,7 +276,17 @@ public class CartController {
     }
 
     /** What every /api/cart call answers with. problem is null when nothing failed. */
-    public record CartState(int lines, int totalStems, String total, String problem) {
+    public record CartState(int lines, 
+        int totalStems, 
+        String total, 
+        String problem) {
+    }
+
+    /** Who the order is for. Never a price or a flower: those are the server's. */
+    public record CheckoutRequest(String fullName, 
+                                String phone, 
+                                String deliveryAddress, 
+                                String email) {
     }
 
     public record CartItemRequest(String speciesKey, Integer quantity) {

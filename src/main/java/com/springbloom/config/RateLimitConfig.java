@@ -24,7 +24,7 @@ public class RateLimitConfig {
 
         FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(
                 new RateLimitFilter(properties, events, storeClock));
-        registration.addUrlPatterns("/api/chat/*");
+        registration.addUrlPatterns("/api/chat/*", RateLimitFilter.CHECKOUT_PATH);
         return registration;
     }
 }
