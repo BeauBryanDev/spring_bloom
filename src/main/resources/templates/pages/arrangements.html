@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Arreglos Florales - Spring-Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Garlands y coronas de flores hechas por encargo en Spring-Bloom."/>
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/icons/main_logo.svg}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/main.css}"/>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <header th:replace="~{fragments/header :: header('arreglos')}"></header>
+
+    <main class="main-content arrangements-page">
+
+        <section class="page-intro">
+            <h1>Arreglos Florales</h1>
+            <p>
+                Garlands y coronas de flores disenadas por nuestro equipo para bodas,
+                eventos, homenajes y decoracion.
+            </p>
+        </section>
+
+        <section class="arrangements-group" aria-labelledby="garlands-title">
+            <h2 id="garlands-title">Garlands</h2>
+            <p class="catalog-subtitle">Guirnaldas de flores y follaje para vestir mesas, arcos y espacios.</p>
+            <div class="arrangements-grid">
+                <th:block th:each="creation : ${garlands}">
+                    <div th:replace="~{fragments/creation-card :: card(${creation})}"></div>
+                </th:block>
+            </div>
+        </section>
+
+        <section class="arrangements-group" aria-labelledby="crowns-title">
+            <h2 id="crowns-title">Coronas de flores</h2>
+            <p class="catalog-subtitle">Coronas grandes para ceremonias, homenajes y celebraciones.</p>
+            <div class="arrangements-grid">
+                <th:block th:each="creation : ${crowns}">
+                    <div th:replace="~{fragments/creation-card :: card(${creation})}"></div>
+                </th:block>
+            </div>
+        </section>
+
+        <!--
+          Honest about what exists: these are not in the cart or the quotation
+          tools yet, so the only real channel is a person at the shop.
+        -->
+        <section class="info-section arrangements-order">
+            <h2>Como pedir un arreglo</h2>
+            <p class="info-lead">
+                Cada arreglo se prepara por encargo, por eso no se agrega al carrito. Los
+                precios son de referencia: el equipo comercial le confirma disponibilidad,
+                fecha de entrega y precio final.
+            </p>
+            <p>
+                Escribanos a
+                <a th:href="'mailto:' + ${@contactDetails.email}" th:text="${@contactDetails.email}">hola@springbloom.com</a>
+                o llame al <span th:text="${@contactDetails.phone}">+57 300 000 0000</span>
+                (<span th:text="${@contactDetails.hours}">Lunes a sabado</span>).
+            </p>
+            <div class="hero-actions">
+                <a href="/catalogo" class="btn-secondary">Ver flores por tallo</a>
+                <a href="/contacto" class="btn-primary">Contacto</a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <aside th:replace="~{fragments/chat-panel :: chat-panel}"></aside>
+
+</div>
+
+<script th:src="@{/assets/js/chat.js}"></script>
+<script th:src="@{/assets/js/cart.js}"></script>
+<script th:src="@{/assets/js/images.js}"></script>
+</body>
+</html>

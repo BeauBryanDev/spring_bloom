@@ -673,6 +673,81 @@ button {
     color: var(--brand-olive-dark);
 }
 
+.creation-description {
+    display: none;
+}
+
+.creation-request {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--brand-olive-dark);
+    text-decoration: none;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 4px 12px;
+}
+
+.creation-request:hover {
+    background-color: var(--brand-olive-dark);
+    color: var(--surface-white);
+}
+
+.arrangements-group {
+    max-width: 1200px;
+    margin: 32px auto 0;
+    padding: 0 32px;
+}
+
+.arrangements-group h2 {
+    margin: 0 0 4px;
+}
+
+.arrangements-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.arrangements-page .creation-image {
+    aspect-ratio: 4 / 3;
+}
+
+.arrangements-page .creation-body {
+    padding: 16px;
+    gap: 6px;
+}
+
+.arrangements-page .creation-body h4 {
+    font-size: 1.1rem;
+}
+
+.arrangements-page .creation-description {
+    display: block;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin: 4px 0 0;
+}
+
+.arrangements-order {
+    margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+    .arrangements-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .arrangements-group {
+        padding: 0 16px;
+    }
+    .arrangements-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* 
    Footer
 */
@@ -2492,6 +2567,38 @@ button {
     font-size: 0.82rem;
     line-height: 1.6;
     color: var(--text-muted);
+}
+.cart-checkout {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 18px 0;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.cart-checkout h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+}
+.cart-checkout label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.cart-checkout input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    font: inherit;
+}
+.cart-checkout .btn-primary {
+    margin-top: 8px;
+}
+.cart-checkout .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 @media (max-width: 900px) {

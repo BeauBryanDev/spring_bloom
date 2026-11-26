@@ -165,7 +165,7 @@
                         <dd th:text="'- ' + ${discountAmount}">- $15.121 COP</dd>
                     </div>
                     <div class="cart-total-row">
-                        <dt>Total estimado</dt>
+                        <dt>Total</dt>
                         <dd th:text="${total}">$85.688 COP</dd>
                     </div>
                 </dl>
@@ -177,28 +177,54 @@
                   imply this figure is a quotation.
                 -->
                 <p class="cart-note">
-                    Es un estimado con la tarifa vigente y el descuento por volumen que
-                    aplica la tienda. La cotizacion en firme, con numero y validez de 5
-                    dias, se la entrega Florabelle.
+                    Precios vigentes con el descuento por volumen que aplica la tienda. Al
+                    pagar, el servidor vuelve a calcular el total con el inventario de ese
+                    momento y le entrega una cotizacion y un pedido con su numero.
                 </p>
-
-                <button class="btn-primary cart-quote" type="button"
-                        th:if="${quotePrompt != null}"
-                        data-action="open-chat"
-                        th:data-message="${quotePrompt}">
-                    Cotizar con Florabelle
-                </button>
 
                 <p class="cart-note" th:if="${cart.anyUnavailable}">
                     Hay flores en su carrito que no estan a la venta ahora mismo. No
-                    entran en el total ni en la cotizacion.
+                    entran en el total; quitelas para poder pagar.
                 </p>
 
-                <p class="cart-note">
-                    Este carrito no se paga directamente: Florabelle le prepara una cotizacion
-                    y, cuando la acepte, un pedido con su numero para pagarlo arriba. Nada de
-                    esto reserva inventario.
-                </p>
+                <!--
+                  Sends who and where only. The flowers are the session's cart and
+                  every price is re-read from flower_stock by CheckoutCartService.
+                -->
+                <form class="cart-checkout" id="cart-checkout-form" th:unless="${cart.anyUnavailable}"
+                      autocomplete="on" novalidate>
+                    <h3>Datos de entrega</h3>
+                    <label for="checkout-name">Nombre completo</label>
+                    <input type="text" id="checkout-name" name="fullName" autocomplete="name"
+                           maxlength="120" required/>
+                    <label for="checkout-phone">Celular (10 digitos)</label>
+                    <input type="tel" id="checkout-phone" name="phone" autocomplete="tel-national"
+                           inputmode="numeric" placeholder="3001234567" maxlength="20" required/>
+                    <label for="checkout-address">Direccion de entrega</label>
+                    <input type="text" id="checkout-address" name="deliveryAddress"
+                           autocomplete="street-address" maxlength="250" required/>
+                    <label for="checkout-email">Correo (opcional)</label>
+                    <input type="email" id="checkout-email" name="email" autocomplete="email"
+                           maxlength="120"/>
+
+                    <p class="order-pay-message" id="cart-checkout-message" role="status" hidden></p>
+
+                    <button type="submit" class="btn-primary cart-quote" id="cart-checkout-button">
+                        Pagar pedido
+                    </button>
+                    <p class="cart-note">
+                        Modo de pruebas: no se cobra dinero real. Use la tarjeta 4242 4242 4242
+                        4242, cualquier fecha futura y cualquier CVC. Las flores no quedan
+                        reservadas hasta que el pago se confirme.
+                    </p>
+                </form>
+
+                <button class="btn-secondary cart-quote" type="button"
+                        th:if="${quotePrompt != null}"
+                        data-action="open-chat"
+                        th:data-message="${quotePrompt}">
+                    Prefiero cotizar con Florabelle
+                </button>
             </aside>
         </section>
 
@@ -213,6 +239,7 @@
 <script th:src="@{/assets/js/chat.js}"></script>
 <script th:src="@{/assets/js/cart.js}"></script>
 <script th:src="@{/assets/js/order-pay.js}"></script>
+<script th:src="@{/assets/js/cart-checkout.js}"></script>
 <script th:src="@{/assets/js/images.js}"></script>
 </body>
 </html>

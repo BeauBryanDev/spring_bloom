@@ -45,6 +45,7 @@ import com.springbloom.domain.port.out.KnowledgeSearchPort.KnowledgeQuery;
 import com.springbloom.domain.port.out.KnowledgeSearchPort.Scope;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
+import com.springbloom.domain.service.pricing.BouquetDiscountPolicy;
 
 /**
  * The agent's tools: thin wrappers over the use cases that already exist, so
@@ -161,12 +162,17 @@ public class FlorabelleTools {
     @Tool(description = """
             Raise a real, saved quotation for a single kind of flower and return its \
             quotation number and total. Only call this once the customer has agreed on \
-            the flower and how many stems they want.""")
+            the flower and how many stems they want. From 10 stems the shop's volume \
+            discount is applied automatically, exactly as for a bouquet; the answer \
+            tells you the percentage that was applied.""")
     public QuotationAnswer quoteSingleFlower(
             @ToolParam(description = "The flower to quote, as findFlowers reported it") String flowerName,
             @ToolParam(description = "How many stems") int quantity) {
 
-        return quoting(() -> List.of(new LineRequest(ProductType.INDIVIDUAL, null,
+        // Was always INDIVIDUAL, so 15 roses were quoted with no discount while the
+        // cart and the catalog card showed 15% off the same stems.
+        ProductType type = BouquetDiscountPolicy.lineTypeFor(1, Math.max(quantity, 1));
+        return quoting(() -> List.of(new LineRequest(type, null,
                 List.of(new SpeciesRequest(resolveKey(flowerName), quantity)))));
     }
 
