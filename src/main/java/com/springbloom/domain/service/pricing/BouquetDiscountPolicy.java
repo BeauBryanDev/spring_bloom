@@ -2,15 +2,13 @@ package com.springbloom.domain.service.pricing;
 
 import java.math.BigDecimal;
 
+import com.springbloom.domain.model.ProductType;
+
 /**
  * How much a bouquet is discounted, decided from the number of stems in it.
  *
  * This exists because the discount used to be an argument every caller invented
- * for itself. That was survivable while a human chose it, and became a real
- * defect the moment the agent was a caller: the model was asked to supply a
- * commercial term, and the only honest thing it could do was ask the customer
- * what discount they would like. A quotation is a price the shop offers, not one
- * the customer or the model names.
+ * for itself.
  *
  * Static and stateless like SpeciesSearch: no bean, no Spring, and its test runs
  * with no context.
@@ -46,5 +44,18 @@ public final class BouquetDiscountPolicy {
             }
         }
         return NO_DISCOUNT;
+    }
+
+    /**
+     * The line type for a basket of this many kinds and stems. One kind below the
+     * first tier is sold by the stem; anything else is a bouquet, so the volume
+     * discount follows the stem count whichever way the customer asked for it.
+     */
+    public static ProductType lineTypeFor(int kinds, int totalStems) {
+        if (kinds <= 0) {
+            throw new IllegalArgumentException("a line needs at least one kind of flower: " + kinds);
+        }
+        boolean discounted = discountFor(totalStems).signum() > 0;
+        return kinds == 1 && !discounted ? ProductType.INDIVIDUAL : ProductType.BOUQUET;
     }
 }
