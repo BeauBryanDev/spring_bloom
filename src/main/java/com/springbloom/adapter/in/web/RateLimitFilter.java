@@ -25,14 +25,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Per-IP limits on the public chat endpoints. Only /api/chat/** is touched:
- * Stripe's webhook, the cart and the admin must never be throttled.
+ * Per-IP limits on the public chat endpoints and the cart checkout. Nothing else
+ * is touched: Stripe's webhook, the cart buttons and the admin must never be
+ * throttled.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
     private static final Duration AUDIT_EVERY = Duration.ofMinutes(1);
     private static final int MAX_AUDIT_KEYS = 10_000;
+    public static final String CHECKOUT_PATH = "/api/cart/checkout";
 
     private final RateLimitProperties properties;
     private final GuardrailEventRepository events;
@@ -42,6 +44,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimiter vision;
     private final RateLimiter quotations;
     private final RateLimiter history;
+    private final RateLimiter checkout;
     private final ConcurrentHashMap<String, Instant> lastAudit = new ConcurrentHashMap<>();
 
     public RateLimitFilter(RateLimitProperties properties,
@@ -56,6 +59,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         this.vision = limiter(properties.getVision());
         this.quotations = limiter(properties.getQuotations());
         this.history = limiter(properties.getHistory());
+        this.checkout = limiter(properties.getCheckout());
     }
 
     private RateLimiter limiter(Rule rule) {
@@ -67,7 +71,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !properties.isEnabled() || !request.getRequestURI().startsWith("/api/chat/");
+        String path = request.getRequestURI();
+        return !properties.isEnabled() || !(path.startsWith("/api/chat/") || path.equals(CHECKOUT_PATH));
     }
 
     @Override
@@ -99,6 +104,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
         if (post && path.equals("/api/chat/quotations")) {
             return quotations.tryAcquire(ip);
+        }
+        if (post && path.equals(CHECKOUT_PATH)) {
+            return checkout.tryAcquire(ip);
         }
         if ("GET".equals(request.getMethod()) && path.equals("/api/chat/history")) {
             return history.tryAcquire(ip);

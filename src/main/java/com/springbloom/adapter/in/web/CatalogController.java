@@ -97,6 +97,15 @@ public class CatalogController {
      * already the unique, stable, readable identifier the whole codebase uses,
      * and a numeric id in a public URL is a database detail nobody asked to see.
      */
+    /** The garlands and crowns on their own page. Made to order, so they are requested, not carted. */
+    @GetMapping("/arreglos")
+    public String arrangements(Model model) {
+        model.addAttribute("garlands", GARLANDS);
+        model.addAttribute("crowns", CROWNS);
+        model.addAttribute("activePage", "arreglos");
+        return "pages/arrangements";
+    }
+
     @GetMapping("/flores/{speciesKey}")
     public String flower(@PathVariable String speciesKey, Model model) {
         CatalogEntry entry = listCatalog.findByKey(speciesKey)
@@ -216,24 +225,31 @@ public class CatalogController {
      * or quotable by Florabelle - they are a storefront placeholder until the
      * order half and a migration adding CROWN exist.
      */
-    public record CreationView(String name, String composition, String price, String imagePath) {
+    public record CreationView(String name, String composition, String price, String imagePath,
+                               String description) {
     }
 
     private static final List<CreationView> GARLANDS = List.of(
             new CreationView("Garland Clasico", "Mix de verdes y flores",
-                    "$165.000 COP", "garland_clasico.jpg"),
+                    "$165.000 COP", "garland_clasico.jpg",
+                    "Guirnalda de follaje fresco con flores de temporada, para mesas, arcos y barandas."),
             new CreationView("Garland Tropical", "Anturios, aves del paraiso",
-                    "$210.000 COP", "garland_tropical.jpg"),
+                    "$210.000 COP", "garland_tropical.jpg",
+                    "Colores intensos y hojas grandes para eventos al aire libre y celebraciones."),
             new CreationView("Garland Premium", "Rosas, orquideas y verdes",
-                    "$245.000 COP", "garland_premium.jpg"));
+                    "$245.000 COP", "garland_premium.jpg",
+                    "Nuestra guirnalda mas elegante, pensada para bodas y decoracion de alto nivel."));
 
     private static final List<CreationView> CROWNS = List.of(
-            new CreationView("Corona Elegance", "Rosas y astromelias",
-                    "$180.000 COP", "corona_elegance.jpg"),
+            new CreationView("Corona Elegante", "Rosas y astromelias",
+                    "$180.000 COP", "corona_elegance.jpg",
+                    "Corona grande de tonos suaves para homenajes, aniversarios y ceremonias."),
             new CreationView("Corona Tropical", "Girasoles y gerberas",
-                    "$165.000 COP", "corona_tropical.jpg"),
-            new CreationView("Corona Luxury", "Orquideas y anturios",
-                    "$260.000 COP", "corona_luxury.jpg"));
+                    "$165.000 COP", "corona_tropical.jpg",
+                    "Una corona alegre y luminosa para inauguraciones y celebraciones."),
+            new CreationView("Corona Lujo", "Orquideas y anturios",
+                    "$260.000 COP", "corona_luxury.jpg",
+                    "Composicion de flores exoticas para ocasiones que piden lo mejor."));
 
     /** Colombian grouping, whole pesos: a per-stem price in centavos is noise on a card. */
     private static String formatCop(BigDecimal amount) {

@@ -32,7 +32,9 @@ public class CartPricing {
     private final ListCatalogUseCase listCatalog;
     private final PricingStrategyFactory pricing;
 
-    public CartPricing(ListCatalogUseCase listCatalog, PricingStrategyFactory pricing) {
+    public CartPricing(ListCatalogUseCase listCatalog, 
+                        PricingStrategyFactory pricing) {
+                            
         this.listCatalog = listCatalog;
         this.pricing = pricing;
     }
