@@ -55,6 +55,23 @@ public class OrderItemEntity {
     @Column(name = "subtotal", nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
+    /**
+     * Set only on a fixed-price arrangement line, all four together
+     * (ck_*_item_creation_complete). A plain id, like species_id, so an old
+     * document never reaches today's price.
+     */
+    @Column(name = "creation_id")
+    private Long creationId;
+
+    @Column(name = "creation_name_snapshot", length = 150)
+    private String creationNameSnapshot;
+
+    @Column(name = "units")
+    private Integer units;
+
+    @Column(name = "unit_price_snapshot", precision = 10, scale = 2)
+    private BigDecimal unitPriceSnapshot;
+
     /** Batched second query, not an entity-graph join: two bags in one fetch is refused. */
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL,
             orphanRemoval = true, fetch = FetchType.LAZY)

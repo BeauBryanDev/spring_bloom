@@ -66,6 +66,23 @@ public class QuotationItemEntity {
     private BigDecimal subtotal;
 
     /**
+     * Set only on a fixed-price arrangement line, all four together
+     * (ck_*_item_creation_complete). A plain id, like species_id, so an old
+     * document never reaches today's price.
+     */
+    @Column(name = "creation_id")
+    private Long creationId;
+
+    @Column(name = "creation_name_snapshot", length = 150)
+    private String creationNameSnapshot;
+
+    @Column(name = "units")
+    private Integer units;
+
+    @Column(name = "unit_price_snapshot", precision = 10, scale = 2)
+    private BigDecimal unitPriceSnapshot;
+
+    /**
      * Loaded by a batched second query rather than by the entity graph: joining
      * this list and quotation.items in one select is two bags, which Hibernate
      * rejects with MultipleBagFetchException. One extra query beats a List to Set
