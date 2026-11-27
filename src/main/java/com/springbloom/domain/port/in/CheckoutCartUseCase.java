@@ -14,6 +14,7 @@ public interface CheckoutCartUseCase {
      * @throws com.springbloom.domain.service.UnavailableSpeciesException if a flower cannot be sold in
      *         the amount asked
      * @throws com.springbloom.domain.service.UnknownSpeciesException if a key is not in the catalog
+     * @throws com.springbloom.domain.service.UnavailableCreationException if an arrangement is unknown or switched off
      */
     CartCheckout checkout(CheckoutCartCommand command);
 
@@ -29,26 +30,48 @@ public interface CheckoutCartUseCase {
         }
     }
 
+    record ArrangementLine(String creationKey, int units) {
+
+        public ArrangementLine {
+            if (creationKey == null || creationKey.isBlank()) {
+                throw new IllegalArgumentException("creationKey is required");
+            }
+            if (units <= 0) {
+                throw new IllegalArgumentException("units must be positive: " + units);
+            }
+        }
+    }
+
     record CheckoutCartCommand(
             List<CartLine> lines,
+            List<ArrangementLine> arrangements,
             String fullName,
             String phone,
             String deliveryAddress,
             String email) {
 
         public CheckoutCartCommand {
-            if (lines == null || lines.isEmpty()) {
+            lines = lines == null ? List.of() : List.copyOf(lines);
+            arrangements = arrangements == null ? List.of() : List.copyOf(arrangements);
+            if (lines.isEmpty() && arrangements.isEmpty()) {
                 throw new IllegalArgumentException("El carrito esta vacio");
             }
-            lines = List.copyOf(lines);
+        }
+
+        public CheckoutCartCommand(List<CartLine> lines, 
+                                    String fullName, 
+                                    String phone,
+                                    String deliveryAddress, 
+                                    String email) {
+                                        
+            this(lines, List.of(), fullName, phone, deliveryAddress, email);
         }
     }
 
     /** paymentUrl is null when the order exists but the checkout could not be opened. */
-    record CartCheckout(String orderNumber, 
-                        String quotationNumber, 
-                        String paymentUrl, 
+    record CartCheckout(String orderNumber,
+                        String quotationNumber,
+                        String paymentUrl,
                         String paymentProblem) {
-                            
     }
 }

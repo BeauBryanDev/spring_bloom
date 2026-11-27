@@ -20,6 +20,13 @@ public interface RequestQuotationUseCase {
      */
     Quotation requestQuotation(RequestQuotationCommand command);
 
+    /**
+     * One garland or crown at its fixed price, bound to the session's conversation.
+     *
+     * @throws com.springbloom.domain.service.UnavailableCreationException if it is unknown or switched off
+     */
+    Quotation requestArrangement(String sessionKey, String creationKey, int units);
+
     /** sessionKey ties the quotation to an anonymous chat; there is no customer yet. */
     record RequestQuotationCommand(String sessionKey, List<LineRequest> lines) {
 
