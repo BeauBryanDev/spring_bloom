@@ -5,6 +5,7 @@ import java.util.List;
 import com.springbloom.adapter.out.persistence.entity.FlowerOrderEntity;
 import com.springbloom.adapter.out.persistence.entity.OrderItemEntity;
 import com.springbloom.adapter.out.persistence.entity.OrderItemSpeciesEntity;
+import com.springbloom.domain.model.CreationLine;
 import com.springbloom.domain.model.FlowerOrder;
 import com.springbloom.domain.model.OrderItem;
 import com.springbloom.domain.model.OrderItemSpecies;
@@ -38,6 +39,13 @@ public class FlowerOrderMapper {
         entity.setProductType(item.productType());
         entity.setDiscountPercentage(item.discountPercentage());
         entity.setSubtotal(item.subtotal().amount());
+        if (item.creation() != null) {
+            CreationLine creation = item.creation();
+            entity.setCreationId(creation.creationId());
+            entity.setCreationNameSnapshot(creation.nameSnapshot());
+            entity.setUnits(creation.units());
+            entity.setUnitPriceSnapshot(creation.unitPriceSnapshot().amount());
+        }
 
         for (OrderItemSpecies line : item.species()) {
             OrderItemSpeciesEntity row = new OrderItemSpeciesEntity();
@@ -83,6 +91,8 @@ public class FlowerOrderMapper {
                 entity.getProductType(),
                 entity.getDiscountPercentage(),
                 species,
-                Money.of(entity.getSubtotal()));
+                Money.of(entity.getSubtotal()),
+                QuotationMapper.creationOf(entity.getCreationId(), entity.getCreationNameSnapshot(),
+                        entity.getUnits(), entity.getUnitPriceSnapshot()));
     }
 }

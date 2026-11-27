@@ -1,10 +1,12 @@
 package com.springbloom.adapter.out.persistence.mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.springbloom.adapter.out.persistence.entity.QuotationEntity;
 import com.springbloom.adapter.out.persistence.entity.QuotationItemEntity;
 import com.springbloom.adapter.out.persistence.entity.QuotationItemSpeciesEntity;
+import com.springbloom.domain.model.CreationLine;
 import com.springbloom.domain.model.Quotation;
 import com.springbloom.domain.model.QuotationItem;
 import com.springbloom.domain.model.QuotationItemSpecies;
@@ -42,6 +44,13 @@ public class QuotationMapper {
         entity.setProductType(item.productType());
         entity.setDiscountPercentage(item.discountPercentage());
         entity.setSubtotal(item.subtotal().amount());
+        if (item.creation() != null) {
+            CreationLine creation = item.creation();
+            entity.setCreationId(creation.creationId());
+            entity.setCreationNameSnapshot(creation.nameSnapshot());
+            entity.setUnits(creation.units());
+            entity.setUnitPriceSnapshot(creation.unitPriceSnapshot().amount());
+        }
 
         for (QuotationItemSpecies line : item.species()) {
             entity.addSpecies(toEntity(line));
@@ -82,16 +91,30 @@ public class QuotationMapper {
                 .map(QuotationMapper::toDomain)
                 .toList();
 
-        Money composedSubtotal = species.stream()
-                .map(QuotationItemSpecies::lineTotal)
-                .reduce(Money.ZERO, Money::plus);
+        CreationLine creation = creationOf(entity.getCreationId(), entity.getCreationNameSnapshot(),
+                entity.getUnits(), entity.getUnitPriceSnapshot());
+
+        Money composedSubtotal = creation != null
+                ? Money.of(entity.getSubtotal())
+                : species.stream()
+                        .map(QuotationItemSpecies::lineTotal)
+                        .reduce(Money.ZERO, Money::plus);
 
         return new QuotationItem(
                 entity.getProductType(),
                 entity.getDiscountPercentage(),
                 species,
                 composedSubtotal,
-                Money.of(entity.getSubtotal()));
+                Money.of(entity.getSubtotal()),
+                creation);
+    }
+
+    /** Null on a flower line: the four columns are set together or not at all. */
+    static CreationLine creationOf(Long id, String name, Integer units, BigDecimal unitPrice) {
+        if (id == null) {
+            return null;
+        }
+        return new CreationLine(id, name, units, Money.of(unitPrice));
     }
 
     private static QuotationItemSpecies toDomain(QuotationItemSpeciesEntity entity) {
