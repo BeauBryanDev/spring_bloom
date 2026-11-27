@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import com.springbloom.domain.model.Complaint;
 import com.springbloom.domain.model.FlowerOrder;
 import com.springbloom.domain.model.ComplaintType;
+import com.springbloom.domain.model.Creation;
 import com.springbloom.domain.model.ProductType;
 import com.springbloom.domain.model.Quotation;
 import com.springbloom.domain.model.QuotationItem;
@@ -24,8 +26,7 @@ import com.springbloom.domain.port.in.CheckAvailabilityUseCase.CheckAvailability
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase;
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase.ClassifyFlowerCommand;
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase.IdentifiedFlower;
-import com.springbloom.domain.port.in.FileComplaintUseCase;
-import com.springbloom.domain.port.in.FileComplaintUseCase.FileComplaintCommand;
+import com.springbloom.domain.port.in.ListCreationsUseCase;
 import com.springbloom.domain.port.in.LookupOrderUseCase;
 import com.springbloom.domain.port.in.LookupOrderUseCase.LookupOrderCommand;
 import com.springbloom.domain.port.in.LookupOrderUseCase.OrderLookup;
@@ -43,6 +44,7 @@ import com.springbloom.domain.port.out.KnowledgeSearchPort;
 import com.springbloom.domain.port.out.KnowledgeSearchPort.KnowledgePassage;
 import com.springbloom.domain.port.out.KnowledgeSearchPort.KnowledgeQuery;
 import com.springbloom.domain.port.out.KnowledgeSearchPort.Scope;
+import com.springbloom.domain.service.UnavailableCreationException;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
 import com.springbloom.domain.service.pricing.BouquetDiscountPolicy;
@@ -66,12 +68,12 @@ public class FlorabelleTools {
 
     private final CheckAvailabilityUseCase checkAvailability;
     private final RequestQuotationUseCase requestQuotation;
-    private final FileComplaintUseCase fileComplaint;
     private final PlaceOrderUseCase placeOrder;
     private final LookupOrderUseCase lookupOrder;
     private final SubmitComplaintUseCase submitComplaint;
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
+    private final ListCreationsUseCase listCreations;
     private final String sessionKey;
     private final String clientIp;
 
@@ -102,24 +104,24 @@ public class FlorabelleTools {
     public FlorabelleTools(
             CheckAvailabilityUseCase checkAvailability,
             RequestQuotationUseCase requestQuotation,
-            FileComplaintUseCase fileComplaint,
             PlaceOrderUseCase placeOrder,
             LookupOrderUseCase lookupOrder,
             SubmitComplaintUseCase submitComplaint,
             ClassifyFlowerUseCase classifyFlower,
             KnowledgeSearchPort knowledgeSearch,
+            ListCreationsUseCase listCreations,
             String sessionKey,
             ImageAttachment image,
             String clientIp) {
 
         this.checkAvailability = checkAvailability;
         this.requestQuotation = requestQuotation;
-        this.fileComplaint = fileComplaint;
         this.placeOrder = placeOrder;
         this.lookupOrder = lookupOrder;
         this.submitComplaint = submitComplaint;
         this.classifyFlower = classifyFlower;
         this.knowledgeSearch = knowledgeSearch;
+        this.listCreations = listCreations;
         this.sessionKey = sessionKey;
         this.image = image;
         this.clientIp = clientIp;
@@ -199,6 +201,53 @@ public class FlorabelleTools {
     }
 
     @Tool(description = """
+            List the shop's garlands and flower crowns (arreglos) with their fixed price \
+            in Colombian pesos and the flowers they are made of. Leave the name empty to \
+            list all six. Call this before ever mentioning an arrangement's price.""")
+    public ArrangementsAnswer findArrangements(
+            @ToolParam(required = false, description = "The arrangement the customer named, if any") String name) {
+
+        List<Creation> found = name == null || name.isBlank()
+                ? listCreations.listActive()
+                : listCreations.search(name);
+        log.info("Session {} searched arrangements '{}': {} found", sessionKey, name, found.size());
+        return new ArrangementsAnswer(found.isEmpty(), found.stream().map(ArrangementOption::of).toList());
+    }
+
+    @Tool(description = """
+            Raise a real, saved quotation for a garland or flower crown at its fixed \
+            price and return its quotation number and total. Arrangements have no \
+            volume discount and no stem count. Only call this once the customer has \
+            chosen the arrangement and how many units they want.""")
+    public QuotationAnswer quoteArrangement(
+            @ToolParam(description = "The arrangement, as findArrangements reported it") String name,
+            @ToolParam(description = "How many units, usually 1") int units) {
+
+        List<Creation> matches = listCreations.search(name);
+        if (matches.size() != 1) {
+            String reason = matches.isEmpty()
+                    ? "no tenemos un arreglo con ese nombre"
+                    : "hay varios arreglos con ese nombre: " + matches.stream()
+                            .map(Creation::name).collect(Collectors.joining(", "))
+                            + "; pregunte cual prefiere";
+            return QuotationAnswer.refused(null, reason);
+        }
+        try {
+            Quotation saved = requestQuotation.requestArrangement(
+                    sessionKey, matches.get(0).creationKey(), units);
+            lastQuotationNumber.set(saved.quotationNumber());
+            log.info("Session {} raised arrangement quotation {}", sessionKey, saved.quotationNumber());
+            return QuotationAnswer.raised(saved);
+
+        } catch (UnavailableCreationException gone) {
+            return QuotationAnswer.refused(null, gone.getMessage());
+        } catch (IllegalArgumentException invalid) {
+            log.warn("Session {} asked for an impossible arrangement: {}", sessionKey, invalid.getMessage());
+            return QuotationAnswer.refused(null, invalid.getMessage());
+        }
+    }
+
+    @Tool(description = """
             Identify the flower in the photo the customer just attached to this \
             conversation, using the shop's own flower recognition model, and return \
             its species, the real price in Colombian pesos and whether it can be sold. \
@@ -267,15 +316,17 @@ public class FlorabelleTools {
     }
 
     @Tool(description = """
-            Record a claim about an order that lookupOrder already verified in this \
-            conversation. Returns the complaint number (REC-...). Filing does NOT grant a \
-            refund or a replacement - the shop decides that afterwards. Refused when the \
-            order was not verified, or when it has not been delivered yet and the claim is \
-            about its condition.""")
+            Record a claim about a paid order that lookupOrder already verified in this \
+            conversation. This is the only way to record a claim. Returns the complaint \
+            number (REC-...). Filing does NOT grant a refund or a replacement - the shop \
+            decides that afterwards. Refused when the order was not verified, is not paid, \
+            or has not been delivered yet and the claim is about its condition. Only claims \
+            about the order itself are accepted: never complaints about staff, the physical \
+            store or anything unrelated to the order.""")
     public SubmitComplaintAnswer submitComplaint(
             @ToolParam(description = "The ORD-... number lookupOrder verified") String orderNumber,
             @ToolParam(description = "What went wrong: DAMAGED_FLOWERS, LATE_DELIVERY, "
-                    + "NOT_DELIVERED, WRONG_ITEM or OTHER") ComplaintType type,
+                    + "NOT_DELIVERED or WRONG_ITEM") ComplaintType type,
             @ToolParam(description = "What the customer described, in their own words, in Spanish") String description) {
 
         try {
@@ -293,34 +344,6 @@ public class FlorabelleTools {
         } catch (IllegalArgumentException invalid) {
             log.warn("Session {} submitted an invalid complaint: {}", sessionKey, invalid.getMessage());
             return SubmitComplaintAnswer.refused(invalid.getMessage());
-        }
-    }
-
-    @Tool(description = """
-            Record a complaint from a customer who could NOT be verified: flowers that \
-            arrived damaged, a late or missing delivery, or the wrong item. It is not linked \
-            to any order. Returns the complaint number the customer can quote when following \
-            it up. Filing a complaint does NOT grant a refund or a replacement - the shop \
-            decides that afterwards. Prefer lookupOrder and submitComplaint whenever the \
-            customer has their order number and phone.""")
-    public ComplaintAnswer fileComplaint(
-            @ToolParam(description = "What went wrong: DAMAGED_FLOWERS, LATE_DELIVERY, "
-                    + "NOT_DELIVERED, WRONG_ITEM or OTHER") ComplaintType type,
-            @ToolParam(description = "What the customer described, in their own words, in Spanish") String description) {
-
-        try {
-            Complaint filed = fileComplaint.file(
-                    new FileComplaintCommand(sessionKey, type, description, null));
-
-            lastComplaintNumber.set(filed.complaintNumber());
-            log.info("Session {} filed complaint {}", sessionKey, filed.complaintNumber());
-
-            return new ComplaintAnswer(true, filed.complaintNumber(), filed.type().label(),
-                    filed.status().label(), false, null);
-
-        } catch (IllegalArgumentException invalid) {
-            log.warn("Session {} filed an invalid complaint: {}", sessionKey, invalid.getMessage());
-            return new ComplaintAnswer(false, null, null, null, false, invalid.getMessage());
         }
     }
 
@@ -468,19 +491,6 @@ public class FlorabelleTools {
     }
 
     /**
-     * orderIdentified says whether we could match the order number. False is not
-     * a failure: the claim is recorded either way, and the shop can chase it.
-     */
-    public record ComplaintAnswer(
-            boolean filed,
-            String complaintNumber,
-            String type,
-            String status,
-            boolean orderIdentified,
-            String problem) {
-    }
-
-    /**
      * What the customer may be told about an order. shipmentStatus is null before a
      * shipment exists; the delivery fields are null until it is delivered.
      */
@@ -557,6 +567,21 @@ public class FlorabelleTools {
                 return title;
             }
             return title.isEmpty() ? part : title + ", " + part;
+        }
+    }
+
+    /** priceCop is the fixed price of one unit. */
+    public record ArrangementsAnswer(boolean noneFound, List<ArrangementOption> arrangements) {
+    }
+
+    public record ArrangementOption(String name, String kind, String priceCop, List<String> flowers) {
+
+        static ArrangementOption of(Creation creation) {
+            return new ArrangementOption(
+                    creation.name(),
+                    creation.productType() == ProductType.CROWN ? "Corona de flores" : "Garland",
+                    creation.price().amount().toPlainString(),
+                    creation.ingredients().stream().map(Creation.Ingredient::commonName).toList());
         }
     }
 
@@ -701,7 +726,7 @@ public class FlorabelleTools {
                     quotation.subtotal().amount().toPlainString(),
                     quotation.discountAmount().amount().toPlainString(),
                     appliedDiscount(quotation),
-                    quotation.totalStems(),
+                    quotation.totalStems() > 0 ? quotation.totalStems() : null,
                     null, null);
         }
 
@@ -713,6 +738,7 @@ public class FlorabelleTools {
             return quotation.items().stream()
                     .map(QuotationItem::discountPercentage)
                     .filter(java.util.Objects::nonNull)
+                    .filter(percentage -> percentage.signum() > 0)
                     .findFirst()
                     .map(BigDecimal::toPlainString)
                     .orElse(null);

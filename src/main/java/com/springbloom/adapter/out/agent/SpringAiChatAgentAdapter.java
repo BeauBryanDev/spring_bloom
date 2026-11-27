@@ -24,7 +24,7 @@ import com.springbloom.domain.model.TokenUsage;
 import com.springbloom.domain.model.vo.ImageAttachment;
 import com.springbloom.domain.port.in.CheckAvailabilityUseCase;
 import com.springbloom.domain.port.in.ClassifyFlowerUseCase;
-import com.springbloom.domain.port.in.FileComplaintUseCase;
+import com.springbloom.domain.port.in.ListCreationsUseCase;
 import com.springbloom.domain.port.in.LookupOrderUseCase;
 import com.springbloom.domain.port.in.PlaceOrderUseCase;
 import com.springbloom.domain.port.in.RequestQuotationUseCase;
@@ -45,36 +45,36 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
     private final ChatClient chatClient;
     private final CheckAvailabilityUseCase checkAvailability;
     private final RequestQuotationUseCase requestQuotation;
-    private final FileComplaintUseCase fileComplaint;
     private final PlaceOrderUseCase placeOrder;
     private final LookupOrderUseCase lookupOrder;
     private final SubmitComplaintUseCase submitComplaint;
     private final ClassifyFlowerUseCase classifyFlower;
     private final KnowledgeSearchPort knowledgeSearch;
+    private final ListCreationsUseCase listCreations;
     private final GuardrailProperties guardrails;
 
     public SpringAiChatAgentAdapter(
             ChatClient florabelleChatClient,
             CheckAvailabilityUseCase checkAvailability,
             RequestQuotationUseCase requestQuotation,
-            FileComplaintUseCase fileComplaint,
             PlaceOrderUseCase placeOrder,
             LookupOrderUseCase lookupOrder,
             SubmitComplaintUseCase submitComplaint,
             ClassifyFlowerUseCase classifyFlower,
             KnowledgeSearchPort knowledgeSearch,
+            ListCreationsUseCase listCreations,
             GuardrailProperties guardrails) {
 
         this.guardrails = guardrails;
         this.chatClient = florabelleChatClient;
         this.checkAvailability = checkAvailability;
         this.requestQuotation = requestQuotation;
-        this.fileComplaint = fileComplaint;
         this.placeOrder = placeOrder;
         this.lookupOrder = lookupOrder;
         this.submitComplaint = submitComplaint;
         this.classifyFlower = classifyFlower;
         this.knowledgeSearch = knowledgeSearch;
+        this.listCreations = listCreations;
     }
 
     @Override
@@ -83,12 +83,12 @@ public class SpringAiChatAgentAdapter implements ChatAgentPort {
         FlorabelleTools tools = new FlorabelleTools(
                 checkAvailability,
                 requestQuotation,
-                fileComplaint,
                 placeOrder,
                 lookupOrder,
                 submitComplaint,
                 classifyFlower,
                 knowledgeSearch,
+                listCreations,
                 request.sessionKey(),
                 request.image(),
                 request.clientIp());

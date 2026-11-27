@@ -16,7 +16,7 @@ import com.springbloom.domain.service.guardrail.TurnFacts;
 final class TurnToolGuard {
 
     static final Set<String> WRITE_TOOLS = Set.of(
-            "quoteSingleFlower", "quoteBouquet", "submitComplaint", "fileComplaint");
+            "quoteSingleFlower", "quoteBouquet", "quoteArrangement", "submitComplaint");
 
     private static final Pattern COP_FIELD = Pattern.compile("\"\\w*Cop\"\\s*:\\s*\"?(\\d+(?:\\.\\d+)?)\"?");
 
