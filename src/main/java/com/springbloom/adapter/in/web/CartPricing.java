@@ -1,10 +1,12 @@
 package com.springbloom.adapter.in.web;
 
 import com.springbloom.domain.model.Cart;
+import com.springbloom.domain.model.Creation;
 import com.springbloom.domain.model.ProductType;
 import com.springbloom.domain.model.vo.Money;
 import com.springbloom.domain.port.in.ListCatalogUseCase;
 import com.springbloom.domain.port.in.ListCatalogUseCase.CatalogEntry;
+import com.springbloom.domain.port.in.ListCreationsUseCase;
 import com.springbloom.domain.service.pricing.BouquetDiscountPolicy;
 import com.springbloom.domain.service.pricing.PricingStrategyFactory;
 import org.springframework.stereotype.Component;
@@ -15,7 +17,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Turns the species keys in a cart into what the page shows.
+ * Turns the species keys and arrangements in a cart into what the page shows.
+ * Arrangements are added at their fixed price after the bouquet discount, which
+ * is decided from loose stems only.
  *
  * Every price here is read from flower_stock on this request. The cart stores no
  * money at all, so a cart left open overnight cannot show yesterday's price, and
@@ -31,12 +35,15 @@ public class CartPricing {
 
     private final ListCatalogUseCase listCatalog;
     private final PricingStrategyFactory pricing;
+    private final ListCreationsUseCase listCreations;
 
-    public CartPricing(ListCatalogUseCase listCatalog, 
-                        PricingStrategyFactory pricing) {
-                            
+    public CartPricing(ListCatalogUseCase listCatalog,
+                        PricingStrategyFactory pricing,
+                        ListCreationsUseCase listCreations) {
+
         this.listCatalog = listCatalog;
         this.pricing = pricing;
+        this.listCreations = listCreations;
     }
 
     public CartView price(Cart cart) {
@@ -82,15 +89,55 @@ public class CartPricing {
                 ? pricing.forType(ProductType.BOUQUET).calculatePrice(subtotal, discountPercentage)
                 : Money.of(BigDecimal.ZERO);
 
+        List<CreationLineView> creationLines = new ArrayList<>();
+        Money creationsTotal = Money.ZERO;
+
+        for (Cart.CreationCartLine line : cart.creationLines()) {
+            Optional<Creation> found = listCreations.findActive(line.creationKey());
+            if (found.isEmpty()) {
+                creationLines.add(CreationLineView.gone(line.creationKey(), line.units()));
+                anyUnavailable = true;
+                continue;
+            }
+            CreationLineView view = CreationLineView.of(found.get(), line.units());
+            creationLines.add(view);
+            creationsTotal = creationsTotal.plus(view.lineTotal());
+        }
+
         return new CartView(
                 lines,
-                subtotal,
-                bundleTotal,
+                subtotal.plus(creationsTotal),
+                bundleTotal.plus(creationsTotal),
                 subtotal.minus(bundleTotal),
                 discountPercentage,
                 sellableStems,
                 cart.totalStems(),
-                anyUnavailable);
+                anyUnavailable,
+                creationLines);
+    }
+
+    /** A garland or crown at its fixed price. available is false once it is switched off. */
+    public record CreationLineView(
+            String creationKey,
+            String name,
+            String productType,
+            String imagePath,
+            int units,
+            boolean available,
+            Money unitPrice,
+            Money lineTotal) {
+
+        static CreationLineView of(Creation creation, int units) {
+            return new CreationLineView(creation.creationKey(), creation.name(),
+                    creation.productType().name(), creation.imageFile(), units, true,
+                    creation.price(), creation.price().multiply(units));
+        }
+
+        static CreationLineView gone(String creationKey, int units) {
+            return new CreationLineView(creationKey, creationKey, 
+                                        null, null, units, false, 
+                                        null, null);
+        }
     }
 
     /**
@@ -110,8 +157,11 @@ public class CartPricing {
             Money unitPrice,
             Money lineTotal) {
 
-        static CartLineView sellable(CatalogEntry entry, int quantity, Money unitPrice,
-                                     Money lineTotal, boolean enoughStock) {
+        static CartLineView sellable(CatalogEntry entry, 
+                                    int quantity, 
+                                    Money unitPrice,
+                                    Money lineTotal, 
+                                    boolean enoughStock) {
             return new CartLineView(
                     entry.speciesKey(), entry.commonName(), entry.scientificName(),
                     entry.speciesKey() + ".jpg", quantity, true, enoughStock,
@@ -140,10 +190,27 @@ public class CartPricing {
             BigDecimal discountPercentage,
             int sellableStems,
             int totalStems,
-            boolean anyUnavailable) {
+            boolean anyUnavailable,
+            List<CreationLineView> creationLines) {
 
         public boolean isEmpty() {
-            return lines.isEmpty();
+            return lines.isEmpty() && creationLines.isEmpty();
+        }
+
+        public int lineCount() {
+            return lines.size() + creationLines.size();
+        }
+
+        public Money creationsTotal() {
+            return creationLines.stream()
+                    .filter(CreationLineView::available)
+                    .map(CreationLineView::lineTotal)
+                    .reduce(Money.ZERO, Money::plus);
+        }
+
+        /** Loose stems before the volume discount. */
+        public Money flowersSubtotal() {
+            return subtotal.minus(creationsTotal());
         }
 
         public boolean hasDiscount() {

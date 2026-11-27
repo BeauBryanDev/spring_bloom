@@ -2,14 +2,17 @@ package com.springbloom.adapter.in.web;
 
 import com.springbloom.adapter.in.web.CartPricing.CartLineView;
 import com.springbloom.adapter.in.web.CartPricing.CartView;
+import com.springbloom.adapter.in.web.CartPricing.CreationLineView;
 import com.springbloom.domain.model.Cart;
 import com.springbloom.domain.port.in.CheckoutCartUseCase;
 import com.springbloom.domain.port.in.CheckoutCartUseCase.CartCheckout;
 import com.springbloom.domain.port.in.CheckoutCartUseCase.CheckoutCartCommand;
+import com.springbloom.domain.service.UnavailableCreationException;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
 import com.springbloom.domain.port.in.ListCatalogUseCase;
 import com.springbloom.domain.port.in.ListCatalogUseCase.CatalogEntry;
+import com.springbloom.domain.port.in.ListCreationsUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -47,16 +50,19 @@ public class CartController {
     private final CartPricing pricing;
     private final ListCatalogUseCase listCatalog;
     private final CheckoutCartUseCase checkoutCart;
+    private final ListCreationsUseCase listCreations;
 
-    public CartController(CartSession session, 
-                            CartPricing pricing, 
+    public CartController(CartSession session,
+                            CartPricing pricing,
                             ListCatalogUseCase listCatalog,
-                            CheckoutCartUseCase checkoutCart) {
+                            CheckoutCartUseCase checkoutCart,
+                            ListCreationsUseCase listCreations) {
 
         this.session = session;
         this.pricing = pricing;
         this.listCatalog = listCatalog;
         this.checkoutCart = checkoutCart;
+        this.listCreations = listCreations;
     }
 
     @GetMapping("/carrito")
@@ -65,7 +71,9 @@ public class CartController {
 
         model.addAttribute("cart", view);
         model.addAttribute("lines", view.lines().stream().map(CartController::toRow).toList());
-        model.addAttribute("subtotal", formatCop(view.subtotal().amount()));
+        model.addAttribute("arrangements", view.creationLines().stream().map(CartController::toRow).toList());
+        model.addAttribute("subtotal", formatCop(view.flowersSubtotal().amount()));
+        model.addAttribute("creationsTotal", formatCop(view.creationsTotal().amount()));
         model.addAttribute("total", formatCop(view.total().amount()));
         model.addAttribute("discountAmount", formatCop(view.discountAmount().amount()));
         model.addAttribute("discountPercentage", trim(view.discountPercentage()));
@@ -77,10 +85,41 @@ public class CartController {
     @PostMapping("/api/cart/items")
     @ResponseBody
     public ResponseEntity<CartState> add(@RequestBody CartItemRequest request) {
+        if (request.creationKey() != null) {
+            return apply(() -> {
+                requireActiveCreation(request.creationKey());
+                session.cart().addCreation(request.creationKey(), request.quantityOrOne());
+            });
+        }
         return apply(() -> {
             requireSellable(request.speciesKey());
             session.cart().add(request.speciesKey(), request.quantityOrOne());
         });
+    }
+
+    @PutMapping("/api/cart/arrangements/{creationKey}")
+    @ResponseBody
+    public ResponseEntity<CartState> updateArrangement(
+            @PathVariable String creationKey,
+            @RequestBody CartItemRequest request) {
+        return apply(() -> {
+            if (request.quantityOrZero() > 0) {
+                requireActiveCreation(creationKey);
+            }
+            session.cart().setCreationUnits(creationKey, request.quantityOrZero());
+        });
+    }
+
+    @DeleteMapping("/api/cart/arrangements/{creationKey}")
+    @ResponseBody
+    public ResponseEntity<CartState> removeArrangement(@PathVariable String creationKey) {
+        return apply(() -> session.cart().removeCreation(creationKey));
+    }
+
+    private void requireActiveCreation(String creationKey) {
+        if (listCreations.findActive(creationKey.trim()).isEmpty()) {
+            throw new IllegalArgumentException("Ese arreglo no esta disponible");
+        }
     }
 
     /**
@@ -147,13 +186,17 @@ public class CartController {
             }
             if (view.anyUnavailable()) {
                 return problem(HttpStatus.CONFLICT,
-                        "Quite del carrito las flores que no estan a la venta antes de pagar");
+                        "Quite del carrito los productos que no estan a la venta antes de pagar");
             }
             try {
                 CartCheckout placed = checkoutCart.checkout(new CheckoutCartCommand(
                         cart.lines().stream()
-                                .map(line -> new CheckoutCartUseCase.CartLine(line.speciesKey(), 
+                                .map(line -> new CheckoutCartUseCase.CartLine(line.speciesKey(),
                                                                             line.quantity()))
+                                .toList(),
+                        cart.creationLines().stream()
+                                .map(line -> new CheckoutCartUseCase.ArrangementLine(line.creationKey(),
+                                                                                   line.units()))
                                 .toList(),
                         request.fullName(), request.phone(), request.deliveryAddress(), request.email()));
                 cart.clear();
@@ -161,6 +204,8 @@ public class CartController {
             } catch (UnavailableSpeciesException unavailable) {
                 return problem(HttpStatus.CONFLICT,
                         nameOf(view, unavailable.getSpeciesKey()) + ": " + unavailable.getReason());
+            } catch (UnavailableCreationException gone) {
+                return problem(HttpStatus.CONFLICT, gone.getMessage());
             } catch (UnknownSpeciesException unknown) {
                 return problem(HttpStatus.CONFLICT, "Una de las flores ya no esta en el catalogo");
             } catch (IllegalArgumentException invalid) {
@@ -220,7 +265,7 @@ public class CartController {
         CartView view = pricing.price(session.cart());
 
         return new CartState(
-                view.lines().size(),
+                view.lineCount(),
                 view.totalStems(),
                 formatCop(view.total().amount()),
                 problem);
@@ -233,16 +278,48 @@ public class CartController {
      * are left out: there is nothing to quote for them.
      */
     private static String quotePrompt(CartView view) {
-        List<String> parts = view.lines().stream()
+        List<String> flowers = view.lines().stream()
                 .filter(CartLineView::quotable)
                 .map(line -> line.quantity() + " tallos de " + line.commonName())
                 .toList();
+        List<String> arrangements = view.creationLines().stream()
+                .filter(CreationLineView::available)
+                .map(line -> line.units() + " " + line.name())
+                .toList();
 
-        if (parts.isEmpty()) {
+        if (flowers.isEmpty() && arrangements.isEmpty()) {
             return null;
         }
-        return "Hola, quisiera cotizar un ramo con " + String.join(", ", parts)
-                + ". Me puede dar el total?";
+        List<String> parts = new java.util.ArrayList<>();
+        if (!flowers.isEmpty()) {
+            parts.add("un ramo con " + String.join(", ", flowers));
+        }
+        if (!arrangements.isEmpty()) {
+            parts.add(String.join(", ", arrangements));
+        }
+        return "Hola, quisiera cotizar " + String.join(" y ", parts) + ". Me puede dar el total?";
+    }
+
+    private static ArrangementRow toRow(CreationLineView line) {
+        return new ArrangementRow(
+                line.creationKey(),
+                line.name(),
+                line.imagePath(),
+                line.units(),
+                line.available(),
+                line.unitPrice() == null ? null : formatCop(line.unitPrice().amount()),
+                line.lineTotal() == null ? null : formatCop(line.lineTotal().amount()));
+    }
+
+    /** A garland or crown row on the cart page. */
+    public record ArrangementRow(
+            String creationKey,
+            String name,
+            String imagePath,
+            int units,
+            boolean available,
+            String unitPrice,
+            String lineTotal) {
     }
 
     private static CartRow toRow(CartLineView line) {
@@ -289,7 +366,8 @@ public class CartController {
                                 String email) {
     }
 
-    public record CartItemRequest(String speciesKey, Integer quantity) {
+    /** speciesKey for a flower, creationKey for a garland or crown. */
+    public record CartItemRequest(String speciesKey, String creationKey, Integer quantity) {
 
         int quantityOrOne() {
             return quantity == null ? 1 : quantity;

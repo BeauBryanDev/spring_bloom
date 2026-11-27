@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.springbloom.domain.model.Creation;
 import com.springbloom.domain.model.ProductType;
 import com.springbloom.domain.model.vo.Money;
 import com.springbloom.domain.port.in.ListCatalogUseCase;
 import com.springbloom.domain.port.in.ListCatalogUseCase.CatalogEntry;
+import com.springbloom.domain.port.in.ListCreationsUseCase;
 import com.springbloom.adapter.in.web.CatalogFilters.Availability;
 import com.springbloom.adapter.in.web.CatalogFilters.PriceBand;
 import com.springbloom.adapter.in.web.CatalogFilters.SortOrder;
@@ -43,10 +45,14 @@ public class CatalogController {
 
     private final ListCatalogUseCase listCatalog;
     private final PricingStrategyFactory pricing;
+    private final ListCreationsUseCase listCreations;
 
-    public CatalogController(ListCatalogUseCase listCatalog, PricingStrategyFactory pricing) {
+    public CatalogController(ListCatalogUseCase listCatalog, 
+                            PricingStrategyFactory pricing,
+                            ListCreationsUseCase listCreations) {
         this.listCatalog = listCatalog;
         this.pricing = pricing;
+        this.listCreations = listCreations;
     }
 
     @GetMapping("/")
@@ -86,8 +92,8 @@ public class CatalogController {
         model.addAttribute("selectedAvailability", availability.name());
         model.addAttribute("selectedPriceBand", priceBand.name());
         model.addAttribute("selectedSort", sort.name());
-        model.addAttribute("garlands", GARLANDS);
-        model.addAttribute("crowns", CROWNS);
+        model.addAttribute("garlands", creationsOf(ProductType.GARLAND));
+        model.addAttribute("crowns", creationsOf(ProductType.CROWN));
         model.addAttribute("activePage", "catalogo");
         return "pages/catalog";
     }
@@ -97,11 +103,11 @@ public class CatalogController {
      * already the unique, stable, readable identifier the whole codebase uses,
      * and a numeric id in a public URL is a database detail nobody asked to see.
      */
-    /** The garlands and crowns on their own page. Made to order, so they are requested, not carted. */
+    /** The garlands and crowns on their own page, at their fixed prices from the creation table. */
     @GetMapping("/arreglos")
     public String arrangements(Model model) {
-        model.addAttribute("garlands", GARLANDS);
-        model.addAttribute("crowns", CROWNS);
+        model.addAttribute("garlands", creationsOf(ProductType.GARLAND));
+        model.addAttribute("crowns", creationsOf(ProductType.CROWN));
         model.addAttribute("activePage", "arreglos");
         return "pages/arrangements";
     }
@@ -219,40 +225,32 @@ public class CatalogController {
             Integer etaDays) {
     }
 
-    /**
-     * Garlands and crowns, hard-coded for now. A crown is not a product_type in
-     * the database yet, so neither of these is priced by the pricing strategies
-     * or quotable by Florabelle - they are a storefront placeholder until the
-     * order half and a migration adding CROWN exist.
-     */
-    public record CreationView(String name, String composition, String price, String imagePath,
+    /** A garland or crown card. price is formatted; ingredients link to their flower pages. */
+    public record CreationView(String creationKey, 
+                                String name, 
+                                List<Creation.Ingredient> ingredients,
+                               String price, 
+                               String imagePath, 
                                String description) {
+
+        static CreationView of(Creation creation) {
+
+            return new CreationView(creation.creationKey(), creation.name(), creation.ingredients(),
+                    formatCop(creation.price().amount()), creation.imageFile(), creation.description());
+        }
     }
 
-    private static final List<CreationView> GARLANDS = List.of(
-            new CreationView("Garland Clasico", "Mix de verdes y flores",
-                    "$165.000 COP", "garland_clasico.jpg",
-                    "Guirnalda de follaje fresco con flores de temporada, para mesas, arcos y barandas."),
-            new CreationView("Garland Tropical", "Anturios, aves del paraiso",
-                    "$210.000 COP", "garland_tropical.jpg",
-                    "Colores intensos y hojas grandes para eventos al aire libre y celebraciones."),
-            new CreationView("Garland Premium", "Rosas, orquideas y verdes",
-                    "$245.000 COP", "garland_premium.jpg",
-                    "Nuestra guirnalda mas elegante, pensada para bodas y decoracion de alto nivel."));
+    private List<CreationView> creationsOf(ProductType type) {
 
-    private static final List<CreationView> CROWNS = List.of(
-            new CreationView("Corona Elegante", "Rosas y astromelias",
-                    "$180.000 COP", "corona_elegance.jpg",
-                    "Corona grande de tonos suaves para homenajes, aniversarios y ceremonias."),
-            new CreationView("Corona Tropical", "Girasoles y gerberas",
-                    "$165.000 COP", "corona_tropical.jpg",
-                    "Una corona alegre y luminosa para inauguraciones y celebraciones."),
-            new CreationView("Corona Lujo", "Orquideas y anturios",
-                    "$260.000 COP", "corona_luxury.jpg",
-                    "Composicion de flores exoticas para ocasiones que piden lo mejor."));
+        return listCreations.listActive().stream()
+                .filter(creation -> creation.productType() == type)
+                .map(CreationView::of)
+                .toList();
+    }
 
     /** Colombian grouping, whole pesos: a per-stem price in centavos is noise on a card. */
     private static String formatCop(BigDecimal amount) {
+        
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
         symbols.setGroupingSeparator('.');
         DecimalFormat format = new DecimalFormat("#,##0", symbols);

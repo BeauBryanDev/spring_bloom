@@ -10,15 +10,6 @@ import com.springbloom.domain.model.Cart;
 
 /**
  * Holds one customer's cart in their HTTP session.
- *
- * Deliberately not a table. A cart is scratch state until it becomes an order,
- * the anonymous session key is its only owner, and a cart table written before
- * ConfirmOrderUseCase exists would be a third near-copy of quotation_item plus
- * a pile of abandoned rows nothing cleans up. When the order half lands, this
- * same Cart is what it reads - and that is when persistence gets decided.
- *
- * DO NOT REMOVE proxyMode = TARGET_CLASS.
- *
  * CartController is a singleton and its dependencies are injected once, at
  * startup. Without the proxy, Spring resolves this bean a single time - for
  * whichever request came first - and every visitor from then on shares that one
