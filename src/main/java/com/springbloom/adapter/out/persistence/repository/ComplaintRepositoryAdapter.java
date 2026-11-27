@@ -115,12 +115,6 @@ public class ComplaintRepositoryAdapter implements ComplaintRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Long> findOrderIdByNumber(String orderNumber) {
-        return jpaRepository.findOrderIdByNumber(orderNumber);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Complaint> findAll() {
         return jpaRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(ComplaintMapper::toDomain)
