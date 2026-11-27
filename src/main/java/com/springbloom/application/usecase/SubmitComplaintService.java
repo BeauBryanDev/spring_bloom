@@ -13,18 +13,21 @@ import org.springframework.stereotype.Service;
 import com.springbloom.domain.model.Complaint;
 import com.springbloom.domain.model.ComplaintType;
 import com.springbloom.domain.model.FlowerOrder;
+import com.springbloom.domain.model.Payment;
 import com.springbloom.domain.model.Shipment;
 import com.springbloom.domain.port.in.SubmitComplaintUseCase;
 import com.springbloom.domain.port.out.ComplaintRepository;
 import com.springbloom.domain.port.out.ConversationRepository;
 import com.springbloom.domain.port.out.FlowerOrderRepository;
+import com.springbloom.domain.port.out.PaymentRepository;
 import com.springbloom.domain.port.out.ShipmentRepository;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * Orchestration only: check the order is the verified customer's, check the
- * claim makes sense for the delivery state, then record it. A late claim is
+ * Orchestration only: check the claim is about an order, that the order is the
+ * verified customer's and paid, that the claim makes sense for the delivery
+ * state, then record it. A late claim is
  * still recorded, with a note for the human who reviews it.
  */
 @Service
@@ -45,11 +48,16 @@ public class SubmitComplaintService implements SubmitComplaintUseCase {
     private final ConversationRepository conversations;
     private final FlowerOrderRepository orders;
     private final ShipmentRepository shipments;
+    private final PaymentRepository payments;
     private final ComplaintRepository complaints;
     private final Clock clock;
 
     @Override
     public SubmitResult submit(SubmitComplaintCommand command) {
+        if (command.type() == ComplaintType.OTHER) {
+            return SubmitResult.refused(Refusal.NOT_ABOUT_AN_ORDER);
+        }
+
         var conversation = conversations.findOrStart(command.sessionKey());
 
         Long customerId = conversation.customer().orElse(null);
@@ -71,6 +79,13 @@ public class SubmitComplaintService implements SubmitComplaintUseCase {
         }
 
         Long orderId = order.get().id();
+
+        // Checked on the payment, not the order status: a paid order that hit short
+        // stock stays PENDING, and that customer has the best reason to complain.
+        if (payments.findByOrderId(orderId).stream().noneMatch(Payment::isPaid)) {
+            return SubmitResult.refused(Refusal.NOT_PAID);
+        }
+
         Optional<Shipment> shipment = shipments.findByOrderId(orderId);
         boolean delivered = shipment.map(Shipment::delivered).orElse(false);
 

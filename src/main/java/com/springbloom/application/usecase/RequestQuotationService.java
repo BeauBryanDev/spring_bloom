@@ -11,17 +11,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.springbloom.domain.model.Creation;
 import com.springbloom.domain.model.FlowerSpecies;
 import com.springbloom.domain.model.FlowerStock;
 import com.springbloom.domain.model.Quotation;
 import com.springbloom.domain.model.QuotationItem;
 import com.springbloom.domain.port.in.RequestQuotationUseCase;
 import com.springbloom.domain.port.out.ConversationRepository;
+import com.springbloom.domain.port.out.CreationRepository;
 import com.springbloom.domain.port.out.FlowerSpeciesRepository;
 import com.springbloom.domain.port.out.FlowerStockRepository;
 import com.springbloom.domain.port.out.QuotationRepository;
 import com.springbloom.domain.service.QuotationComposer;
 import com.springbloom.domain.service.QuotationComposer.Selection;
+import com.springbloom.domain.service.UnavailableCreationException;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
 
@@ -43,6 +46,7 @@ public class RequestQuotationService implements RequestQuotationUseCase {
     private final QuotationComposer composer;
     private final QuotationRepository quotationRepository;
     private final ConversationRepository conversationRepository;
+    private final CreationRepository creationRepository;
     private final Clock storeClock;
 
     /**
@@ -60,6 +64,24 @@ public class RequestQuotationService implements RequestQuotationUseCase {
         // quotation with a null conversation_id can never be found again by chat.
         UUID conversationId = conversationRepository.findOrStart(command.sessionKey()).id();
 
+        return save(command.sessionKey(), items, conversationId);
+    }
+
+    @Override
+    public Quotation requestArrangement(String sessionKey, String creationKey, int units) {
+        if (sessionKey == null || sessionKey.isBlank()) {
+            throw new IllegalArgumentException("A session key is required");
+        }
+        Creation creation = creationRepository.findByKey(creationKey)
+                .filter(Creation::active)
+                .orElseThrow(() -> new UnavailableCreationException(creationKey));
+        QuotationItem item = QuotationItem.of(creation, units);
+
+        UUID conversationId = conversationRepository.findOrStart(sessionKey).id();
+        return save(sessionKey, List.of(item), conversationId);
+    }
+
+    private Quotation save(String sessionKey, List<QuotationItem> items, UUID conversationId) {
         Quotation composed = composer.compose(items)
                 .withConversation(conversationId)
                 .withValidUntil(expiry());
@@ -67,7 +89,7 @@ public class RequestQuotationService implements RequestQuotationUseCase {
         Quotation saved = quotationRepository.save(composed);
 
         log.info("Session {} quoted as {} for {}",
-                command.sessionKey(), saved.quotationNumber(), saved.totalAmount().amount());
+                sessionKey, saved.quotationNumber(), saved.totalAmount().amount());
 
         return saved;
     }

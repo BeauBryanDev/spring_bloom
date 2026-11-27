@@ -1,6 +1,7 @@
 package com.springbloom.application.usecase;
 
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,12 +75,18 @@ public class PayOrderService implements PayOrderUseCase {
         boolean payable = order.status() == OrderStatus.PENDING && !paid;
 
         List<ViewLine> lines = order.items().stream()
-                .flatMap(item -> item.species().stream()
-                        .map(line -> new ViewLine(item.productType(),
-                                line.commonNameSnapshot(),
-                                line.quantity(),
-                                line.unitPriceSnapshot(),
-                                line.lineTotal())))
+                .flatMap(item -> item.isArrangement()
+                        ? Stream.of(new ViewLine(item.productType(),
+                                item.creation().nameSnapshot(),
+                                item.creation().units(),
+                                item.creation().unitPriceSnapshot(),
+                                item.subtotal()))
+                        : item.species().stream()
+                                .map(line -> new ViewLine(item.productType(),
+                                        line.commonNameSnapshot(),
+                                        line.quantity(),
+                                        line.unitPriceSnapshot(),
+                                        line.lineTotal())))
                 .toList();
 
         return new OrderView(order.orderNumber(),

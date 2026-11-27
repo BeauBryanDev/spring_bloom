@@ -4,12 +4,14 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.springbloom.domain.model.Creation;
 import com.springbloom.domain.model.Customer;
 import com.springbloom.domain.model.FlowerOrder;
 import com.springbloom.domain.model.FlowerSpecies;
@@ -19,7 +21,9 @@ import com.springbloom.domain.model.Quotation;
 import com.springbloom.domain.model.QuotationItem;
 import com.springbloom.domain.model.QuotationStatus;
 import com.springbloom.domain.port.in.CheckoutCartUseCase;
+import com.springbloom.domain.port.in.CheckoutCartUseCase.ArrangementLine;
 import com.springbloom.domain.port.in.PayOrderUseCase;
+import com.springbloom.domain.port.out.CreationRepository;
 import com.springbloom.domain.port.out.CustomerRepository;
 import com.springbloom.domain.port.out.FlowerOrderRepository;
 import com.springbloom.domain.port.out.FlowerSpeciesRepository;
@@ -28,6 +32,7 @@ import com.springbloom.domain.port.out.QuotationRepository;
 import com.springbloom.domain.service.PaymentNotConfiguredException;
 import com.springbloom.domain.service.QuotationComposer;
 import com.springbloom.domain.service.QuotationComposer.Selection;
+import com.springbloom.domain.service.UnavailableCreationException;
 import com.springbloom.domain.service.UnavailableSpeciesException;
 import com.springbloom.domain.service.UnknownSpeciesException;
 import com.springbloom.domain.service.pricing.BouquetDiscountPolicy;
@@ -35,9 +40,10 @@ import com.springbloom.domain.service.pricing.BouquetDiscountPolicy;
 import lombok.RequiredArgsConstructor;
 
 /**
- * The cart's own path to an order, without the chat. The cart is priced again
- * here from live stock through the same QuotationComposer the agent uses, so the
- * figure Stripe charges is a real COT- document, never what the page displayed.
+ * The cart's own path to an order, without the chat. The flowers are priced again
+ * here from live stock through the same QuotationComposer the agent uses, and each
+ * arrangement from its row in creation, so the figure Stripe charges is a real
+ * COT- document, never what the page displayed.
  *
  * Not @Transactional for the same reason as PlaceOrderService: the order insert
  * runs in its own REQUIRES_NEW transaction for the number retry. Everything that
@@ -56,17 +62,28 @@ public class CheckoutCartService implements CheckoutCartUseCase {
     private final QuotationRepository quotations;
     private final CustomerRepository customers;
     private final FlowerOrderRepository orders;
+    private final CreationRepository creations;
     private final PayOrderUseCase payOrder;
     private final Clock storeClock;
 
     @Override
     public CartCheckout checkout(CheckoutCartCommand command) {
 
-        List<Selection> selections = command.lines().stream().map(this::select).toList();
-        int stems = selections.stream().mapToInt(Selection::quantity).sum();
-        ProductType type = BouquetDiscountPolicy.lineTypeFor(selections.size(), stems);
+        List<QuotationItem> items = new ArrayList<>();
 
-        QuotationItem item = composer.composeItem(type, null, selections);
+        List<Selection> selections = command.lines().stream().map(this::select).toList();
+        if (!selections.isEmpty()) {
+            int stems = selections.stream().mapToInt(Selection::quantity).sum();
+            ProductType type = BouquetDiscountPolicy.lineTypeFor(selections.size(), stems);
+            items.add(composer.composeItem(type, null, selections));
+        }
+        for (ArrangementLine line : command.arrangements()) {
+            Creation creation = creations.findByKey(line.creationKey())
+                    .filter(Creation::active)
+                    .orElseThrow(() -> new UnavailableCreationException(line.creationKey()));
+            items.add(QuotationItem.of(creation, line.units()));
+        }
+
         Customer customer = Customer.unsaved(
                                 command.fullName(), 
                                 command.email(), 
@@ -75,7 +92,7 @@ public class CheckoutCartService implements CheckoutCartUseCase {
                             );
 
         Customer saved = customers.save(customer);
-        Quotation quotation = quotations.save(composer.compose(List.of(item))
+        Quotation quotation = quotations.save(composer.compose(items)
                 .withCustomer(saved.id())
                 .withStatus(QuotationStatus.ACCEPTED)
                 .withValidUntil(expiry()));

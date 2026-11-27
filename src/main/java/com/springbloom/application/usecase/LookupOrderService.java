@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.Map;
 import java.util.Optional;
 
@@ -104,8 +105,10 @@ public class LookupOrderService implements LookupOrderUseCase {
         }
 
         List<String> items = order.items().stream()
-                .flatMap(item -> item.species().stream())
-                .map(LookupOrderService::line)
+                .flatMap(item -> item.isArrangement()
+                        ? Stream.of(
+                                item.creation().units() + " x " + item.creation().nameSnapshot())
+                        : item.species().stream().map(LookupOrderService::line))
                 .toList();
 
         return new VerifiedOrder(order.orderNumber(),
