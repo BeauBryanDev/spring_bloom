@@ -24,13 +24,4 @@ public interface ComplaintRepository {
 
     /** Every claim, newest first, for the admin review screen. */
     List<Complaint> findAll();
-
-    /**
-     * Resolves a customer-facing order number to its id.
-     *
-     * This sits here as a stopgap: FlowerOrderRepository does not exist yet, and
-     * mapping the whole order aggregate just to attach a claim would be a large
-     * detour. Move it when the order half is built.
-     */
-    Optional<Long> findOrderIdByNumber(String orderNumber);
 }

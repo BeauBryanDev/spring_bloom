@@ -4,13 +4,13 @@ import com.springbloom.domain.model.Complaint;
 import com.springbloom.domain.model.ComplaintType;
 
 /**
- * Files a claim against an order whose owner was already verified in this
- * conversation (see LookupOrderUseCase). Recording is all it does: the shop
- * decides the outcome, never the chat.
+ * Files a claim against a paid order whose owner was already verified in this
+ * conversation (see LookupOrderUseCase). It is the only way the chat records a
+ * claim. Recording is all it does: the shop decides the outcome, never the chat.
  */
 public interface SubmitComplaintUseCase {
 
-    SubmitResult submit(SubmitComplaintCommand command);
+    SubmitResult submit(SubmitComplaintCommand command);  /// Interface Segregation Principle
 /*
 A customer may have several orders, so the tool
     has to say which one. This stays safe because the service checks that the
@@ -42,7 +42,10 @@ A customer may have several orders, so the tool
 
     /** Why a claim was not filed. The wording is the customer-facing reason, as with FlowerStockStatus. */
     enum Refusal {
+        NOT_ABOUT_AN_ORDER("Por este chat solo se registran reclamos sobre un pedido: flores en mal "
+                + "estado, pedido equivocado, entrega tarde o pedido no recibido"),
         NOT_VERIFIED("Primero hay que verificar el pedido con su numero y el telefono del pedido"),
+        NOT_PAID("Ese pedido todavia no figura como pagado, asi que aun no se puede reclamar sobre el"),
         NOT_DELIVERED_YET("El pedido todavia no figura como entregado, asi que solo se puede "
                 + "registrar que no llego o que llego tarde");
 
