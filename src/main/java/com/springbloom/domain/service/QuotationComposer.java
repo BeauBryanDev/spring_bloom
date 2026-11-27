@@ -52,6 +52,9 @@ public class QuotationComposer {
         if (selections == null || selections.isEmpty()) {
             throw new IllegalArgumentException("A quotation line needs at least one species");
         }
+        if (productType != null && !productType.pricedFromStems()) {
+            throw new IllegalArgumentException(productType + " lines are sold only as an arrangement");
+        }
 
         for (Selection selection : selections) {
             requireAvailable(selection);

@@ -23,7 +23,7 @@ public class PricingStrategyFactory {
             }
         }
         for (ProductType type : ProductType.values()) {
-            if (!this.strategies.containsKey(type)) {
+            if (type.pricedFromStems() && !this.strategies.containsKey(type)) {
                 throw new IllegalStateException("No pricing strategy registered for " + type);
             }
         }
